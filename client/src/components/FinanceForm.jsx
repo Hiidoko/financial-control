@@ -12,9 +12,9 @@ const fieldConfig = [
   { key: 'riskTolerance', label: 'Tolerância ao risco (1-5)', step: 1, min: 1, max: 5 }
 ]
 
-export function FinanceForm ({ data, expenses, onChange, onExpenseChange, onAddExpense, onRemoveExpense, onSubmit, isLoading }) {
+export function FinanceForm ({ data, expenses, onChange, onExpenseChange, onAddExpense, onRemoveExpense, onSubmit, isLoading, tourId }) {
   return (
-    <section className="panel">
+    <section className="panel" data-tour={tourId}>
       <header className="panel-header">
         <h2 className="panel-title">Perfil financeiro</h2>
         <p className="panel-subtitle">Preencha seus dados para gerar projeções personalizadas.</p>
@@ -24,7 +24,7 @@ export function FinanceForm ({ data, expenses, onChange, onExpenseChange, onAddE
         event.preventDefault()
         onSubmit()
       }}>
-        <div className="form-grid">
+        <div className="form-grid" data-tour="form-inputs">
           {fieldConfig.map((field) => (
             <label key={field.key} className="input-field">
               <span className="input-label">{field.label}</span>
@@ -42,7 +42,7 @@ export function FinanceForm ({ data, expenses, onChange, onExpenseChange, onAddE
         </div>
 
         <div>
-          <div className="flex-between">
+          <div className="flex-between" data-tour="expenses-breakdown">
             <h3 className="section-title">Divisão dos gastos</h3>
             <button type="button" className="button-ghost" onClick={onAddExpense}>
               adicionar categoria
@@ -94,5 +94,6 @@ FinanceForm.propTypes = {
   onAddExpense: PropTypes.func.isRequired,
   onRemoveExpense: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  tourId: PropTypes.string
 }

@@ -58,9 +58,9 @@ const sliderConfig = [
   }
 ]
 
-export function ScenarioControls ({ scenario, onChange }) {
+export function ScenarioControls ({ scenario, onChange, tourId }) {
   return (
-    <section className="panel">
+    <section className="panel" data-tour={tourId}>
       <header className="panel-header flex-between">
         <div>
           <h2 className="panel-title">Cenários inteligentes</h2>
@@ -76,7 +76,7 @@ export function ScenarioControls ({ scenario, onChange }) {
             : `${value}${slider.unit ? slider.unit : ''}`
 
           return (
-            <div key={slider.key}>
+            <div key={slider.key} data-tour={slider.key === 'incomeGrowthRate' ? 'scenario-slider' : undefined}>
               <div className="flex-between">
                 <div>
                   <h3 className="section-title">{slider.label}</h3>
@@ -103,5 +103,6 @@ export function ScenarioControls ({ scenario, onChange }) {
 
 ScenarioControls.propTypes = {
   scenario: PropTypes.object.isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
+  tourId: PropTypes.string
 }

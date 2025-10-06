@@ -1,8 +1,62 @@
 :root {
-  color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #0b1120;
-  color: #0b1120;
+  color-scheme: dark;
+  --bg-page: #0b1120;
+  --bg-page-secondary: #111827;
+  --bg-radial: rgba(79, 70, 229, 0.45);
+  --page-text: #f8fafc;
+  --text-muted: rgba(226, 232, 240, 0.75);
+  --text-subtle: rgba(226, 232, 240, 0.65);
+  --panel-bg: rgba(15, 23, 42, 0.75);
+  --panel-border: rgba(148, 163, 184, 0.15);
+  --panel-shadow: 0 24px 40px rgba(15, 23, 42, 0.35);
+  --panel-text: #e2e8f0;
+  --input-bg: rgba(15, 23, 42, 0.65);
+  --input-border: rgba(148, 163, 184, 0.25);
+  --input-text: #f8fafc;
+  --button-primary-bg: linear-gradient(135deg, #6366f1, #22d3ee);
+  --button-primary-shadow: 0 18px 32px rgba(99, 102, 241, 0.35);
+  --button-ghost-border: rgba(94, 234, 212, 0.5);
+  --button-ghost-color: rgba(94, 234, 212, 0.9);
+  --card-border: rgba(148, 163, 184, 0.2);
+  --metric-bg: rgba(30, 41, 59, 0.85);
+  --chart-bg: rgba(15, 23, 42, 0.75);
+  --tag-bg: rgba(45, 212, 191, 0.15);
+  --tag-color: rgba(45, 212, 191, 0.85);
+  --pdf-bg: rgba(56, 189, 248, 0.18);
+  --pdf-color: rgba(56, 189, 248, 0.92);
+  --pdf-border: rgba(56, 189, 248, 0.28);
+  --focus-ring: 0 0 0 2px rgba(94, 234, 212, 0.35);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-page: #edf2ff;
+  --bg-page-secondary: #f8fafc;
+  --bg-radial: rgba(79, 70, 229, 0.18);
+  --page-text: #0f172a;
+  --text-muted: rgba(30, 41, 59, 0.75);
+  --text-subtle: rgba(30, 41, 59, 0.6);
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(148, 163, 184, 0.28);
+  --panel-shadow: 0 24px 40px rgba(15, 23, 42, 0.12);
+  --panel-text: #1f2937;
+  --input-bg: rgba(241, 245, 249, 0.9);
+  --input-border: rgba(148, 163, 184, 0.35);
+  --input-text: #0f172a;
+  --button-primary-bg: linear-gradient(135deg, #4f46e5, #0ea5e9);
+  --button-primary-shadow: 0 12px 26px rgba(79, 70, 229, 0.25);
+  --button-ghost-border: rgba(14, 165, 233, 0.5);
+  --button-ghost-color: rgba(14, 165, 233, 0.85);
+  --card-border: rgba(148, 163, 184, 0.25);
+  --metric-bg: rgba(255, 255, 255, 0.85);
+  --chart-bg: rgba(255, 255, 255, 0.88);
+  --tag-bg: rgba(14, 165, 233, 0.16);
+  --tag-color: rgba(14, 165, 233, 0.82);
+  --pdf-bg: rgba(14, 165, 233, 0.15);
+  --pdf-color: rgba(14, 165, 233, 0.85);
+  --pdf-border: rgba(14, 165, 233, 0.28);
+  --focus-ring: 0 0 0 2px rgba(14, 165, 233, 0.35);
 }
 
 * {
@@ -13,9 +67,10 @@
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top, rgba(79, 70, 229, 0.45), transparent 40%),
-    linear-gradient(180deg, #0b1120 0%, #111827 100%);
-  color: #0f172a;
+  background: radial-gradient(circle at top, var(--bg-radial), transparent 45%),
+    linear-gradient(180deg, var(--bg-page) 0%, var(--bg-page-secondary) 100%);
+  color: var(--page-text);
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 a {
@@ -31,6 +86,7 @@ a {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 24px 48px;
+  transition: color 0.3s ease;
 }
 
 .page-grid {
@@ -43,13 +99,14 @@ a {
 }
 
 .panel {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 28px;
   padding: 28px;
   backdrop-filter: blur(12px);
-  color: #e2e8f0;
-  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.35);
+  color: var(--panel-text);
+  box-shadow: var(--panel-shadow);
+  transition: background 0.4s ease, border 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
 }
 
 .panel-header {
@@ -64,7 +121,7 @@ a {
 
 .panel-subtitle {
   font-size: 0.9rem;
-  color: rgba(226, 232, 240, 0.75);
+  color: var(--text-muted);
 }
 
 .form-grid {
@@ -81,7 +138,7 @@ a {
 }
 
 .input-label {
-  color: rgba(226, 232, 240, 0.85);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -89,9 +146,9 @@ a {
   appearance: none;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.65);
-  color: #f8fafc;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--input-text);
   transition: border 0.2s ease, box-shadow 0.2s ease;
   font-size: 0.95rem;
 }
@@ -111,7 +168,7 @@ a {
   padding: 14px 18px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  background: var(--button-primary-bg);
   color: #ffffff;
   font-weight: 600;
   text-transform: uppercase;
@@ -122,7 +179,7 @@ a {
 
 .button-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 32px rgba(99, 102, 241, 0.35);
+  box-shadow: var(--button-primary-shadow);
 }
 
 .button-primary:disabled {
@@ -137,9 +194,9 @@ a {
   justify-content: center;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(94, 234, 212, 0.5);
+  border: 1px solid var(--button-ghost-border);
   background: transparent;
-  color: rgba(94, 234, 212, 0.9);
+  color: var(--button-ghost-color);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -161,6 +218,32 @@ a {
   background: rgba(248, 113, 113, 0.12);
 }
 
+.header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--page-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border 0.2s ease;
+}
+
+.toggle-button:hover {
+  background: rgba(99, 102, 241, 0.15);
+}
+
 .expense-list {
   display: flex;
   flex-direction: column;
@@ -174,18 +257,9 @@ a {
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  background: rgba(15, 23, 42, 0.55);
-}
-
-.expense-item input[type='text'],
-.expense-item input[type='number'] {
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 12px;
-  padding: 10px 12px;
-  color: #f8fafc;
-  font-size: 0.9rem;
+  border: 1px solid var(--card-border);
+  background: var(--panel-bg);
+  color: var(--panel-text);
 }
 
 .expense-item input[type='text'] {
@@ -208,22 +282,23 @@ a {
 .section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: rgba(226, 232, 240, 0.9);
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
 .text-muted {
-  color: rgba(226, 232, 240, 0.65);
+  color: var(--text-subtle);
   font-size: 0.85rem;
 }
 
 .chart-card {
   position: relative;
   padding: 20px;
-  background: rgba(15, 23, 42, 0.75);
+  background: var(--chart-bg);
   border-radius: 28px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.35);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--panel-shadow);
+  transition: background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease;
 }
 
 .chart-card h3 {
@@ -239,14 +314,15 @@ a {
 .metric-box {
   padding: 16px;
   border-radius: 18px;
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--metric-bg);
+  border: 1px solid var(--card-border);
+  transition: background 0.3s ease, border 0.3s ease;
 }
 
 .metric-label {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.9);
+  color: var(--text-muted);
   letter-spacing: 0.08em;
   margin-bottom: 6px;
 }
@@ -254,13 +330,13 @@ a {
 .metric-value {
   font-size: 1.35rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--page-text);
 }
 
 .metric-subtext {
   margin-top: 6px;
   font-size: 0.8rem;
-  color: rgba(148, 163, 184, 0.85);
+  color: var(--text-subtle);
 }
 
 .recommendation-list {
@@ -271,9 +347,10 @@ a {
 .recommendation-card {
   padding: 18px;
   border-radius: 20px;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--metric-bg);
   border: 1px solid rgba(99, 102, 241, 0.25);
-  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.35);
+  box-shadow: var(--panel-shadow);
+  transition: background 0.3s ease, border 0.3s ease;
 }
 
 .recommendation-card h4 {
@@ -283,7 +360,7 @@ a {
 
 .recommendation-card p {
   font-size: 0.9rem;
-  color: rgba(226, 232, 240, 0.78);
+  color: var(--text-muted);
 }
 
 .tag {
@@ -295,36 +372,23 @@ a {
   font-size: 0.7rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: rgba(45, 212, 191, 0.15);
-  color: rgba(45, 212, 191, 0.85);
+  background: var(--tag-bg);
+  color: var(--tag-color);
 }
 
-.tag--impact-high {
-  background: rgba(248, 113, 113, 0.18);
-  color: rgba(248, 113, 113, 0.9);
-}
-
-.tag--impact-medium {
-  background: rgba(250, 204, 21, 0.22);
-  color: rgba(250, 204, 21, 0.9);
-}
-
-.tag--impact-low {
-  background: rgba(59, 130, 246, 0.18);
-  color: rgba(59, 130, 246, 0.9);
-}
-
+.tag--impact-high,
 .tag--impact-alto {
   background: rgba(248, 113, 113, 0.18);
   color: rgba(248, 113, 113, 0.9);
 }
 
+.tag--impact-medium,
 .tag--impact-medio {
   background: rgba(250, 204, 21, 0.22);
   color: rgba(250, 204, 21, 0.9);
 }
 
-.tag--impact-baixo {
+.tag--impact-low {
   background: rgba(59, 130, 246, 0.18);
   color: rgba(59, 130, 246, 0.9);
 }
@@ -394,11 +458,11 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(56, 189, 248, 0.18);
-  color: rgba(56, 189, 248, 0.92);
+  background: var(--pdf-bg);
+  color: var(--pdf-color);
   padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  border: 1px solid var(--pdf-border);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -407,8 +471,103 @@ a {
   background: rgba(56, 189, 248, 0.28);
 }
 
+.widget-board {
+  display: grid;
+  gap: 24px;
+}
+
+.widget-item {
+  position: relative;
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.widget-item.dragging {
+  cursor: grabbing;
+  transform: scale(1.01);
+  box-shadow: 0 18px 36px rgba(34, 197, 94, 0.2);
+}
+
+.widget-item::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.timeline-card {
+  padding: 20px;
+  border-radius: 28px;
+  background: var(--chart-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--panel-shadow);
+}
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--text-subtle);
+}
+
+.timeline-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.timeline-canvas {
+  height: 220px;
+}
+
+.joyride-tooltip {
+  background: var(--panel-bg);
+  color: var(--panel-text);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  max-width: 320px;
+}
+
+.joyride-tooltip__button {
+  font-family: inherit;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+[data-focus-mode='on'] .focus-optional {
+  display: none;
+}
+
+[data-focus-mode='on'] .focus-core {
+  box-shadow: var(--focus-ring);
+  border-color: rgba(94, 234, 212, 0.35);
+}
+
+[data-focus-mode='on'] .header-controls {
+  gap: 16px;
+}
+
 @media (max-width: 960px) {
   .layout-two-columns {
     grid-template-columns: 1fr;
+  }
+
+  .widget-item::after {
+    display: none;
   }
 }

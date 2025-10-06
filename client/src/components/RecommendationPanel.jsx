@@ -22,13 +22,13 @@ Section.propTypes = {
   children: PropTypes.node
 }
 
-export function RecommendationPanel ({ recommendations, aiAdvice }) {
+export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
   if (!recommendations) return null
 
   const { quickWins, expenseCuts, strategicMoves, riskMitigation, kpis } = recommendations
 
   return (
-    <section className="panel" id="recommendation-section">
+    <section className="panel" id="recommendation-section" data-tour={tourId}>
       <header className="panel-header flex-between">
         <div>
           <h2 className="panel-title">Recomendações inteligentes</h2>
@@ -124,5 +124,6 @@ RecommendationPanel.propTypes = {
     highlight: PropTypes.string,
     message: PropTypes.string,
     targetRunway: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  })
+  }),
+  tourId: PropTypes.string
 }
