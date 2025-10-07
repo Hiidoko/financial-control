@@ -74,7 +74,7 @@ function buildEvents (baseline, input, summary) {
   return events
 }
 
-export function FinancialTimeline ({ baseline, input, summary }) {
+export function FinancialTimeline ({ baseline, input, summary, tourId }) {
   if (!baseline) return null
 
   const events = buildEvents(baseline, input, summary)
@@ -151,7 +151,7 @@ export function FinancialTimeline ({ baseline, input, summary }) {
   }
 
   return (
-    <section className="timeline-card focus-optional" data-tour="timeline">
+    <section className="timeline-card focus-optional" data-tour={tourId}>
       <header className="panel-header">
         <h2 className="panel-title">Linha do tempo financeira</h2>
         <p className="panel-subtitle">Eventos críticos e hitos durante a projeção base.</p>
@@ -178,5 +178,6 @@ FinancialTimeline.propTypes = {
     timeline: PropTypes.array
   }),
   input: PropTypes.object,
-  summary: PropTypes.object
+  summary: PropTypes.object,
+  tourId: PropTypes.string
 }

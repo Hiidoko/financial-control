@@ -130,7 +130,7 @@ export default function App () {
       map.timeline = {
         label: 'Linha do tempo',
         importance: 'optional',
-        node: <FinancialTimeline baseline={baselineScenario} input={results.input} summary={summary} />
+        node: <FinancialTimeline baseline={baselineScenario} input={results.input} summary={summary} tourId="timeline" />
       }
     }
 
