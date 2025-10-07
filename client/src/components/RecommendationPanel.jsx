@@ -25,7 +25,15 @@ Section.propTypes = {
 export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
   if (!recommendations) return null
 
-  const { quickWins, expenseCuts, strategicMoves, riskMitigation, kpis } = recommendations
+  const {
+    quickWins,
+    expenseCuts,
+    strategicMoves,
+    riskMitigation,
+    persona,
+    benchmark,
+    kpis
+  } = recommendations
   const savingsRate = kpis?.savingsRate ?? 0
   const runwayMonths = kpis?.runwayMonths ?? 0
   const goalsAchievedCount = kpis?.goalsAchievedCount ?? 0
@@ -33,6 +41,7 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
   const requiredMonthlyContribution = kpis?.requiredMonthlyContribution ?? 0
   const financialIndependenceIndex = kpis?.financialIndependenceIndex ?? 0
   const shortfallProbability = kpis?.shortfallProbability ?? 0
+  const discretionaryRatio = kpis?.discretionaryRatio ?? 0
 
   return (
     <section className="panel" id="recommendation-section" data-tour={tourId}>
@@ -50,10 +59,26 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
       </header>
 
       <div className="stack-space">
+        {persona && (
+          <div className="recommendation-card">
+            <h4>Perfil financeiro sugerido: {persona.name}</h4>
+            <p>{persona.description}</p>
+            <p className="metric-subtext">{persona.rationale}</p>
+            {persona.playbook?.length > 0 && (
+              <ul className="bullet-list">
+                {persona.playbook.map((item, index) => (
+                  <li key={`persona-play-${index}`}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         {aiAdvice && (
           <div className="recommendation-card">
             <h4>Insights comportamentais</h4>
             <p>{aiAdvice.message}</p>
+            {aiAdvice.rationale && <p className="metric-subtext">Por quê: {aiAdvice.rationale}</p>}
           </div>
         )}
 
@@ -62,6 +87,7 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
             <div key={`quick-${index}`} className="recommendation-card">
               <h4>{item.title}</h4>
               <p>{item.description}</p>
+              {item.reason && <p className="metric-subtext">Por quê: {item.reason}</p>}
             </div>
           ))}
         </Section>
@@ -72,6 +98,7 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
               <h4>{item.title}</h4>
               <p>{item.description}</p>
               <p className="metric-subtext">Impacto mensal estimado: {formatCurrency(item.estimatedMonthlyImpact)}</p>
+              {item.reason && <p className="metric-subtext">Por quê: {item.reason}</p>}
             </div>
           ))}
         </Section>
@@ -85,6 +112,7 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
               </div>
               <p>{item.description}</p>
               <p className="metric-subtext">Prazo sugerido: {item.timeHorizon}</p>
+              {item.reason && <p className="metric-subtext">Por quê: {item.reason}</p>}
             </div>
           ))}
         </Section>
@@ -95,9 +123,25 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
               <h4>{item.scenario}</h4>
               <p>{item.insight}</p>
               <p className="metric-subtext">Ação recomendada: {item.action}</p>
+              {item.reason && <p className="metric-subtext">Por quê: {item.reason}</p>}
             </div>
           ))}
         </Section>
+
+        {benchmark && (
+          <Section title="Como você se compara" description={`Referência: ${benchmark.source}`}>
+            <div className="recommendation-card">
+              <p>{benchmark.notes}</p>
+              <ul className="bullet-list">
+                {benchmark.topDeviations?.slice(0, 4).map((item, index) => (
+                  <li key={`bench-${index}`}>
+                    {item.category}: {Math.round(item.share * 100)}% vs {Math.round(item.benchmarkShare * 100)}% ({item.delta >= 0 ? '+' : ''}{Math.round(item.delta * 100)} p.p.)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Section>
+        )}
       </div>
 
       {kpis && (
@@ -133,6 +177,11 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
               <div className="metric-value">{(shortfallProbability * 100).toFixed(1)}%</div>
               <p className="metric-subtext">Probabilidade de falha na meta prioritária (Monte Carlo).</p>
             </article>
+            <article className="metric-box">
+              <div className="metric-label">Gastos discricionários</div>
+              <div className="metric-value">{(discretionaryRatio * 100).toFixed(1)}%</div>
+              <p className="metric-subtext">Inclui lazer, vestuário e extras. Ajuste conforme sua persona.</p>
+            </article>
           </div>
         </footer>
       )}
@@ -141,11 +190,20 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
 }
 
 RecommendationPanel.propTypes = {
-  recommendations: PropTypes.object,
+  recommendations: PropTypes.shape({
+    quickWins: PropTypes.array,
+    expenseCuts: PropTypes.array,
+    strategicMoves: PropTypes.array,
+    riskMitigation: PropTypes.array,
+    persona: PropTypes.object,
+    benchmark: PropTypes.object,
+    kpis: PropTypes.object
+  }),
   aiAdvice: PropTypes.shape({
     highlight: PropTypes.string,
     message: PropTypes.string,
-    targetRunway: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    targetRunway: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    rationale: PropTypes.string
   }),
   tourId: PropTypes.string
 }
