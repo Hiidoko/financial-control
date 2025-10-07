@@ -244,6 +244,44 @@ a {
   background: rgba(99, 102, 241, 0.15);
 }
 
+.export-menu {
+  position: relative;
+}
+
+.export-menu__panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(340px, 90vw);
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid var(--card-border);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(14px);
+  z-index: 20;
+  display: grid;
+  gap: 18px;
+}
+
+.export-menu__panel .button-ghost {
+  justify-content: center;
+}
+
+.share-block {
+  display: grid;
+  gap: 10px;
+}
+
+.share-link-preview {
+  display: grid;
+  gap: 10px;
+}
+
+.share-link-preview .input-control {
+  font-size: 0.75rem;
+}
+
 .expense-list {
   display: flex;
   flex-direction: column;
@@ -580,6 +618,79 @@ a {
   height: 220px;
 }
 
+.history-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.history-card {
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  background: var(--panel-bg);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.history-card--selected {
+  border-color: rgba(94, 234, 212, 0.6);
+  box-shadow: 0 18px 28px rgba(94, 234, 212, 0.18);
+}
+
+.history-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.history-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-subtle);
+}
+
+.history-comparison {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--card-border);
+  display: grid;
+  gap: 16px;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.comparison-grid .metric-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.calendar-card {
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  background: var(--panel-bg);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  box-shadow: var(--panel-shadow);
+}
+
+.calendar-card .button-primary {
+  width: fit-content;
+}
+
+.calendar-card .button-ghost {
+  width: fit-content;
+}
+
 .joyride-tooltip {
   background: var(--panel-bg);
   color: var(--panel-text);
@@ -616,5 +727,19 @@ a {
 
   .widget-item::after {
     display: none;
+  }
+
+  .export-menu__panel {
+    position: static;
+    width: 100%;
+  }
+
+  .history-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
   }
 }

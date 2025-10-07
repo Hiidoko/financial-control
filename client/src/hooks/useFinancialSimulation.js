@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { runSimulation } from '../services/api.js'
+import { decryptShareFragment, extractShareFragment } from '../utils/exporters.js'
 
 const defaultExpenses = [
   { category: 'Moradia', amount: 2500 },
@@ -42,6 +43,9 @@ const defaultAnnualBonuses = [
   { id: 'bonus-plr', label: 'PLR', month: 3, amount: defaultForm.monthlyIncome * 0.6 }
 ]
 
+const HISTORY_STORAGE_KEY = 'ffs:history'
+const MAX_HISTORY_ENTRIES = 15
+
 export function useFinancialSimulation () {
   const [financialData, setFinancialData] = useState(defaultForm)
   const [scenario, setScenario] = useState(defaultScenario)
@@ -49,10 +53,32 @@ export function useFinancialSimulation () {
   const [goals, setGoals] = useState(defaultGoals)
   const [taxes, setTaxes] = useState(defaultTaxes)
   const [annualBonuses, setAnnualBonuses] = useState(defaultAnnualBonuses)
+  const [history, setHistory] = useState(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const stored = window.localStorage.getItem(HISTORY_STORAGE_KEY)
+      if (!stored) return []
+      const parsed = JSON.parse(stored)
+      return Array.isArray(parsed) ? parsed : []
+    } catch (error) {
+      console.warn('Não foi possível carregar histórico de simulações', error)
+      return []
+    }
+  })
 
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const toPersist = history.slice(0, MAX_HISTORY_ENTRIES)
+      window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(toPersist))
+    } catch (err) {
+      console.warn('Não foi possível salvar histórico de simulações', err)
+    }
+  }, [history])
 
   const updateFinancialData = useCallback((field, value) => {
     setFinancialData((prev) => ({
@@ -162,12 +188,124 @@ export function useFinancialSimulation () {
     try {
       const data = await runSimulation(payload)
       setResults(data)
+
+      const payloadClone = JSON.parse(JSON.stringify(payload))
+      const entry = {
+        id: `sim-${Date.now()}`,
+        timestamp: Date.now(),
+        label: `Simulação ${new Date().toLocaleString('pt-BR')}`,
+        payload: payloadClone,
+        summary: data.simulation?.summary ?? null,
+        scenarios: data.simulation?.scenarios ?? [],
+        stressTests: data.simulation?.stressTests ?? [],
+        recommendations: data.recommendations ?? null,
+        comment: ''
+      }
+
+      setHistory((prev) => [entry, ...prev].slice(0, MAX_HISTORY_ENTRIES))
     } catch (err) {
       setError(err.message)
     } finally {
       setIsLoading(false)
     }
   }, [payload])
+
+  const applyPayload = useCallback((data) => {
+    if (!data) return
+
+    setFinancialData({
+      monthlyIncome: Number(data.monthlyIncome ?? defaultForm.monthlyIncome),
+      monthlyExpenses: Number(data.monthlyExpenses ?? defaultForm.monthlyExpenses),
+      currentSavings: Number(data.currentSavings ?? defaultForm.currentSavings),
+      expectedReturnRate: Number(data.expectedReturnRate ?? defaultForm.expectedReturnRate),
+      inflationRate: Number(data.inflationRate ?? defaultForm.inflationRate),
+      additionalContribution: Number(data.additionalContribution ?? defaultForm.additionalContribution),
+      riskTolerance: Number(data.riskTolerance ?? defaultForm.riskTolerance)
+    })
+
+    setScenario({
+      ...defaultScenario,
+      ...Object.fromEntries(Object.entries(data.scenario ?? {}).map(([key, value]) => [key, Number(value ?? defaultScenario[key])]))
+    })
+
+    setExpensesBreakdown((data.expensesBreakdown && data.expensesBreakdown.length > 0)
+      ? data.expensesBreakdown.map((item, index) => ({
+          category: item.category || `Categoria ${index + 1}`,
+          amount: Number(item.amount ?? 0)
+        }))
+      : defaultExpenses)
+
+    setGoals((data.goals && data.goals.length > 0)
+      ? data.goals.map((goal, index) => ({
+          id: goal.id || `goal-${Date.now()}-${index}`,
+          name: goal.name || `Meta ${index + 1}`,
+          amount: Number(goal.amount ?? 0),
+          targetYears: Number(goal.targetYears ?? 1),
+          priority: goal.priority || 'media'
+        }))
+      : defaultGoals)
+
+    setTaxes({
+      ...defaultTaxes,
+      ...(data.taxes || {})
+    })
+
+    setAnnualBonuses((data.annualBonuses && data.annualBonuses.length > 0)
+      ? data.annualBonuses.map((bonus, index) => ({
+          id: bonus.id || `bonus-${Date.now()}-${index}`,
+          label: bonus.label || `Bônus ${index + 1}`,
+          month: Number(bonus.month ?? 12),
+          amount: Number(bonus.amount ?? 0)
+        }))
+      : defaultAnnualBonuses)
+  }, [])
+
+  const updateHistoryComment = useCallback((historyId, comment) => {
+    setHistory((prev) => prev.map((entry) => (
+      entry.id === historyId
+        ? { ...entry, comment }
+        : entry
+    )))
+  }, [])
+
+  const restoreSimulation = useCallback((historyId, { autoRun = false } = {}) => {
+    const entry = history.find((item) => item.id === historyId)
+    if (!entry) return
+    applyPayload(entry.payload)
+    if (autoRun) {
+      setTimeout(() => {
+        submit()
+      }, 150)
+    }
+  }, [history, applyPayload, submit])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const fragment = extractShareFragment()
+    if (!fragment) return
+
+    const handleShareImport = async () => {
+      try {
+        const password = window.prompt('Informe a senha do plano compartilhado:')
+        if (!password) return
+        const shared = await decryptShareFragment(fragment, password)
+        if (shared?.payload) {
+          applyPayload(shared.payload)
+          window.setTimeout(() => {
+            submit()
+          }, 200)
+          window.alert('Plano compartilhado importado! Rodando simulação atualizada...')
+        }
+      } catch (err) {
+        console.error('Falha ao importar plano compartilhado', err)
+        window.alert('Não foi possível importar o plano. Verifique a senha ou gere um novo link.')
+      } finally {
+        window.location.hash = ''
+      }
+    }
+
+    handleShareImport()
+  }, [applyPayload, submit])
 
   return {
     financialData,
@@ -176,6 +314,7 @@ export function useFinancialSimulation () {
     goals,
     taxes,
     annualBonuses,
+  history,
     results,
     isLoading,
     error,
@@ -192,6 +331,8 @@ export function useFinancialSimulation () {
     updateAnnualBonus,
     addAnnualBonus,
     removeAnnualBonus,
+    updateHistoryComment,
+    restoreSimulation,
     submit
   }
 }

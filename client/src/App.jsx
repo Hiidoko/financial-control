@@ -8,15 +8,17 @@ import { MetricCards } from './components/MetricCards.jsx'
 import { ScenarioSummary } from './components/ScenarioSummary.jsx'
 import { RecommendationPanel } from './components/RecommendationPanel.jsx'
 import { StressTestList } from './components/StressTestList.jsx'
-import { PdfExportButton } from './components/PdfExportButton.jsx'
 import { WidgetBoard } from './components/WidgetBoard.jsx'
 import { FinancialTimeline } from './components/FinancialTimeline.jsx'
+import { ExportMenu } from './components/ExportMenu.jsx'
+import { SimulationHistory } from './components/SimulationHistory.jsx'
+import { CalendarPlanner } from './components/CalendarPlanner.jsx'
 import { useFinancialSimulation } from './hooks/useFinancialSimulation.js'
 import { getBehaviorAdvice } from './ml/recommendationModel.js'
 import { useThemeContext } from './context/ThemeContext.jsx'
 
 const WIDGET_ORDER_KEY = 'ffs:widget-order'
-const DEFAULT_WIDGET_ORDER = ['metrics', 'projection', 'timeline', 'summary', 'stress', 'recommendations']
+const DEFAULT_WIDGET_ORDER = ['metrics', 'projection', 'timeline', 'summary', 'history', 'calendar', 'stress', 'recommendations']
 
 export default function App () {
   const {
@@ -27,8 +29,10 @@ export default function App () {
     taxes,
     annualBonuses,
     results,
+    history,
     error,
     isLoading,
+    payload,
     updateFinancialData,
     updateScenario,
     updateExpense,
@@ -41,6 +45,8 @@ export default function App () {
     updateAnnualBonus,
     addAnnualBonus,
     removeAnnualBonus,
+    updateHistoryComment,
+    restoreSimulation,
     submit
   } = useFinancialSimulation()
 
@@ -163,8 +169,30 @@ export default function App () {
       }
     }
 
+    if (history.length > 0) {
+      map.history = {
+        label: 'Histórico',
+        importance: 'optional',
+        node: (
+          <SimulationHistory
+            history={history}
+            onUpdateComment={updateHistoryComment}
+            onRestore={restoreSimulation}
+          />
+        )
+      }
+    }
+
+    if (results?.recommendations) {
+      map.calendar = {
+        label: 'Agenda financeira',
+        importance: 'optional',
+        node: <CalendarPlanner payload={payload} recommendations={results.recommendations} />
+      }
+    }
+
     return map
-  }, [summary, scenarios, baselineScenario, results, aiAdvice])
+  }, [summary, scenarios, baselineScenario, results, aiAdvice, history, updateHistoryComment, restoreSimulation, payload])
 
   const tourSteps = useMemo(() => [
     {
@@ -177,7 +205,7 @@ export default function App () {
     },
     {
       target: '[data-tour="dashboard-controls"]',
-      content: 'Alterne entre tema claro/escuro, ative o modo foco e exporte o plano em PDF.'
+      content: 'Alterne entre tema claro/escuro, ative o modo foco e use as opções de exportação e compartilhamento.'
     },
     {
       target: '[data-tour="dashboard-widgets"]',
@@ -233,7 +261,7 @@ export default function App () {
           >
             Assistente guiado
           </button>
-          <PdfExportButton targetId="dashboard-content" />
+          <ExportMenu targetId="dashboard-content" results={results} payload={payload} />
         </div>
       </header>
 
