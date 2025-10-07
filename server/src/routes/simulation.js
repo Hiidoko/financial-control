@@ -13,12 +13,14 @@ router.get('/presets', (req, res) => {
       monthlyIncome: 8000,
       monthlyExpenses: 5200,
       currentSavings: 15000,
-      goalAmount: 200000,
-      goalYears: 5,
       expectedReturnRate: 8,
       inflationRate: 4,
       additionalContribution: 500,
       riskTolerance: 3,
+      goals: [
+        { id: 'preset-1', name: 'Entrada da casa', amount: 200000, targetYears: 5, priority: 'alta' },
+        { id: 'preset-2', name: 'Educação dos filhos', amount: 80000, targetYears: 8, priority: 'media' }
+      ],
       scenario: {
         incomeGrowthRate: 3,
         expenseGrowthRate: 2,

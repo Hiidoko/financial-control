@@ -26,6 +26,13 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
   if (!recommendations) return null
 
   const { quickWins, expenseCuts, strategicMoves, riskMitigation, kpis } = recommendations
+  const savingsRate = kpis?.savingsRate ?? 0
+  const runwayMonths = kpis?.runwayMonths ?? 0
+  const goalsAchievedCount = kpis?.goalsAchievedCount ?? 0
+  const totalGoals = kpis?.totalGoals ?? 0
+  const requiredMonthlyContribution = kpis?.requiredMonthlyContribution ?? 0
+  const financialIndependenceIndex = kpis?.financialIndependenceIndex ?? 0
+  const shortfallProbability = kpis?.shortfallProbability ?? 0
 
   return (
     <section className="panel" id="recommendation-section" data-tour={tourId}>
@@ -98,18 +105,33 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
           <div className="metrics-grid">
             <article className="metric-box">
               <div className="metric-label">Taxa de poupança</div>
-              <div className="metric-value">{(kpis.savingsRate * 100).toFixed(1)}%</div>
+              <div className="metric-value">{(savingsRate * 100).toFixed(1)}%</div>
               <p className="metric-subtext">Meta mínima: 20%</p>
             </article>
             <article className="metric-box">
               <div className="metric-label">Meses de reserva</div>
-              <div className="metric-value">{kpis.runwayMonths.toFixed(1)}</div>
+              <div className="metric-value">{runwayMonths.toFixed(1)}</div>
               <p className="metric-subtext">Ideal: {aiAdvice?.targetRunway ?? '3-6'} meses</p>
             </article>
             <article className="metric-box">
+              <div className="metric-label">Metas no cenário base</div>
+              <div className="metric-value">{goalsAchievedCount}/{totalGoals}</div>
+              <p className="metric-subtext">Acompanhe o avanço das metas prioritárias.</p>
+            </article>
+            <article className="metric-box">
               <div className="metric-label">Aporte recomendado</div>
-              <div className="metric-value">{formatCurrency(kpis.requiredMonthlyContribution)}</div>
-              <p className="metric-subtext">Para atingir a meta no prazo definido.</p>
+              <div className="metric-value">{formatCurrency(requiredMonthlyContribution)}</div>
+              <p className="metric-subtext">Valor extra estimado para cobrir metas pendentes.</p>
+            </article>
+            <article className="metric-box">
+              <div className="metric-label">Índice de independência</div>
+              <div className="metric-value">{financialIndependenceIndex.toFixed(2)}x</div>
+              <p className="metric-subtext">Renda passiva alvo: 1x gastos médios mensais.</p>
+            </article>
+            <article className="metric-box">
+              <div className="metric-label">Risco de shortfall</div>
+              <div className="metric-value">{(shortfallProbability * 100).toFixed(1)}%</div>
+              <p className="metric-subtext">Probabilidade de falha na meta prioritária (Monte Carlo).</p>
             </article>
           </div>
         </footer>

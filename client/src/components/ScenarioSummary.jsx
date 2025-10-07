@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { formatCurrency, formatMonths } from '../utils/formatters.js'
+import { formatCurrency } from '../utils/formatters.js'
 
 export function ScenarioSummary ({ scenarios }) {
   if (!scenarios || scenarios.length === 0) return null
@@ -17,9 +17,20 @@ export function ScenarioSummary ({ scenarios }) {
             <div className="metric-label" style={{ color: scenario.color }}>{scenario.label}</div>
             <div className="metric-value">{formatCurrency(scenario.summary.finalBalance)}</div>
             <p className="metric-subtext">
-              {scenario.summary.goalAchieved
-                ? `Meta em ${formatMonths(scenario.summary.goalAchievedMonth)}`
-                : 'Meta não atingida no período'}
+              {(() => {
+                const totalGoals = scenario.summary.goals?.length ?? 0
+                const achievedGoals = scenario.summary.goalsAchievedCount ?? 0
+                if (totalGoals === 0) return 'Cadastre metas para acompanhar este cenário.'
+                if (achievedGoals === totalGoals) {
+                  return 'Todas as metas alcançadas dentro do horizonte.'
+                }
+                const nextPending = scenario.summary.goals?.find((goal) => !goal.achieved)
+                if (nextPending) {
+                  const years = Math.ceil((nextPending.targetMonth ?? 12) / 12)
+                  return `Falta ${formatCurrency(nextPending.shortfall ?? 0)} para "${nextPending.name}" até o ${years}º ano.`
+                }
+                return 'Reavalie aportes e prioridades para atingir todas as metas.'
+              })()}
             </p>
           </article>
         ))}

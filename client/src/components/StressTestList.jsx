@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { formatCurrency } from '../utils/formatters.js'
 
-export function StressTestList ({ stressTests, goalAmount }) {
+export function StressTestList ({ stressTests }) {
   if (!stressTests || stressTests.length === 0) return null
 
   return (
@@ -27,8 +27,12 @@ export function StressTestList ({ stressTests, goalAmount }) {
             )}
             <p className={test.goalStillAchieved ? 'text-success' : 'text-danger'}>
               {test.goalStillAchieved
-                ? 'Mesmo com o choque, a meta permanece viável.'
-                : `A meta de ${formatCurrency(goalAmount)} ficaria comprometida.`}
+                ? test.focusGoalName
+                  ? `Mesmo com o choque, a meta prioritária "${test.focusGoalName}" permanece viável.`
+                  : 'Mesmo com o choque, o plano se mantém resiliente.'
+                : test.focusGoalName
+                  ? `A meta prioritária "${test.focusGoalName}" ficaria comprometida.`
+                  : 'Os choques impactam o alcance das metas.'}
             </p>
           </article>
         ))}
@@ -38,6 +42,5 @@ export function StressTestList ({ stressTests, goalAmount }) {
 }
 
 StressTestList.propTypes = {
-  stressTests: PropTypes.array,
-  goalAmount: PropTypes.number
+  stressTests: PropTypes.array
 }

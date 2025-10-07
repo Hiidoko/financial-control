@@ -5,6 +5,7 @@ Aplicação web full-stack que permite projetar cenários financeiros, visualiza
 ## 🚀 Principais recursos
 
 - **Simulação de cenários** com sliders que permitem avaliar perda temporária de renda, aumento de ganhos e choques de gastos.
+- **Planejamento de múltiplas metas** com priorização, trade-offs automáticos e acompanhamento do progresso individual.
 - **Dashboards interativos** com gráficos de patrimônio projetado, comparativo de cenários e KPIs relevantes.
 - **Testes de estresse** para quedas de mercado e picos de inflação.
 - **Recomendações automáticas** vindas do back-end (heurísticas financeiras) e do módulo de IA leve com TensorFlow.js.

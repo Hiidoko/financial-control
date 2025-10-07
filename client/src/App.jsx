@@ -21,8 +21,11 @@ const DEFAULT_WIDGET_ORDER = ['metrics', 'projection', 'timeline', 'summary', 's
 export default function App () {
   const {
     financialData,
+    goals,
     scenario,
     expensesBreakdown,
+    taxes,
+    annualBonuses,
     results,
     error,
     isLoading,
@@ -31,6 +34,13 @@ export default function App () {
     updateExpense,
     addExpense,
     removeExpense,
+    updateGoal,
+    addGoal,
+    removeGoal,
+    updateTax,
+    updateAnnualBonus,
+    addAnnualBonus,
+    removeAnnualBonus,
     submit
   } = useFinancialSimulation()
 
@@ -68,14 +78,12 @@ export default function App () {
   useEffect(() => {
     if (!results?.simulation) return
 
-    const baseline = results.simulation.summary.baseline
+    const primaryGoal = results.simulation.summary.goals?.[0]
     const expenseRatio = financialData.monthlyIncome > 0
       ? financialData.monthlyExpenses / financialData.monthlyIncome
       : 1
 
-    const goalProgress = financialData.goalAmount > 0
-      ? Math.min(baseline.finalBalance / financialData.goalAmount, 1)
-      : 0
+    const goalProgress = primaryGoal?.completionRatio ?? 0
 
     getBehaviorAdvice({
       savingsRate: results.simulation.summary.savingsRate,
@@ -91,10 +99,15 @@ export default function App () {
 
   const headerSubtitle = useMemo(() => {
     if (!summary) return 'Combine projeções e inteligência leve para tomar decisões melhores.'
-    if (summary.baseline.goalAchieved) {
-      return 'Seu plano atinge a meta. Veja como antecipar o resultado com aportes estratégicos.'
+    const totalGoals = summary.baseline?.goals?.length ?? 0
+    const achievedGoals = summary.baseline?.goalsAchievedCount ?? 0
+    if (totalGoals > 0 && achievedGoals === totalGoals) {
+      return 'Todas as metas estão no caminho certo. Explore aportes extras para antecipar conquistas.'
     }
-    return 'Sua meta ainda não é atingida no cenário base. Ajuste aportes ou gastos para chegar lá.'
+    if (achievedGoals > 0) {
+      return 'Parte das metas foi alcançada no cenário base. Ajuste aportes para equilibrar as demais.'
+    }
+    return 'As metas prioritárias ainda precisam de reforço. Reorganize aportes ou prazos para alcançar seus objetivos.'
   }, [summary])
 
   const baselineScenario = useMemo(() => (
@@ -138,7 +151,7 @@ export default function App () {
       map.stress = {
         label: 'Testes de estresse',
         importance: 'optional',
-        node: <StressTestList stressTests={results.simulation.stressTests} goalAmount={financialData.goalAmount} />
+        node: <StressTestList stressTests={results.simulation.stressTests} />
       }
     }
 
@@ -151,12 +164,12 @@ export default function App () {
     }
 
     return map
-  }, [summary, scenarios, baselineScenario, results, financialData.goalAmount, aiAdvice])
+  }, [summary, scenarios, baselineScenario, results, aiAdvice])
 
   const tourSteps = useMemo(() => [
     {
       target: '[data-tour="form"]',
-      content: 'Comece preenchendo renda, despesas, patrimônio e meta para personalizar todas as projeções.'
+      content: 'Comece preenchendo renda, despesas, patrimônio e suas metas para personalizar todas as projeções.'
     },
     {
       target: '[data-tour="scenario"]',
@@ -228,11 +241,21 @@ export default function App () {
         <div className="stacked-cards">
           <FinanceForm
             data={financialData}
+            goals={goals}
             expenses={expensesBreakdown}
+            taxes={taxes}
+            annualBonuses={annualBonuses}
             onChange={updateFinancialData}
+            onGoalChange={updateGoal}
+            onAddGoal={addGoal}
+            onRemoveGoal={removeGoal}
             onExpenseChange={updateExpense}
             onAddExpense={addExpense}
             onRemoveExpense={removeExpense}
+            onTaxChange={updateTax}
+            onBonusChange={updateAnnualBonus}
+            onAddBonus={addAnnualBonus}
+            onRemoveBonus={removeAnnualBonus}
             onSubmit={submit}
             isLoading={isLoading}
             tourId="form"

@@ -26,18 +26,46 @@ function buildExpenseCuts (input) {
   }))
 }
 
+function sortGoalsByPriority (goals = []) {
+  const priorityWeight = { alta: 3, media: 2, baixa: 1 }
+  return [...goals].sort((a, b) => {
+    const weightDiff = (priorityWeight[b.priority] ?? 0) - (priorityWeight[a.priority] ?? 0)
+    if (weightDiff !== 0) return weightDiff
+    return a.targetMonth - b.targetMonth
+  })
+}
+
 function buildStrategicMoves (input, simulation) {
-  const requiredContribution = simulation.summary.requiredMonthlyContribution
-  const baselineContrib = simulation.scenarios[0].summary.goalAchieved
-    ? 0
-    : Math.max(requiredContribution - input.additionalContribution, 0)
+  const goalsInsights = sortGoalsByPriority(simulation.summary.goals)
+  const primaryGoal = goalsInsights[0]
+  const shortfallProbability = simulation.summary.shortfallProbability ?? 0
 
   const moves = []
 
-  if (baselineContrib > 0) {
+  if (primaryGoal && primaryGoal.shortfall > 0) {
     moves.push({
-      title: 'Reforçar aportes mensais',
-      description: `Para bater a meta em ${input.goalYears} anos, adicione mais R$ ${formatCurrency(baselineContrib)} por mês em investimentos indexados ao CDI ou IPCA+.`,
+      title: `Priorizar meta: ${primaryGoal.name}`,
+      description: `Para alcançar "${primaryGoal.name}" em ${Math.ceil(primaryGoal.targetMonth / 12)} anos, destine aproximadamente R$ ${formatCurrency(primaryGoal.additionalMonthlyContribution)} extras por mês ou realoque aportes de metas menos prioritárias.`,
+      timeHorizon: '0-3 meses',
+      impact: 'alto'
+    })
+  }
+
+  const secondaryShortfalls = goalsInsights.filter(goal => goal.shortfall > 0 && goal.id !== primaryGoal?.id)
+  if (secondaryShortfalls.length > 0) {
+    const goalNames = secondaryShortfalls.map(goal => `"${goal.name}"`).join(', ')
+    moves.push({
+      title: 'Rebalancear objetivos',
+      description: `Considere alongar prazos ou reduzir valores das metas ${goalNames} para manter o foco nas metas prioritárias sem comprometer o orçamento.`,
+      timeHorizon: '3-6 meses',
+      impact: 'médio'
+    })
+  }
+
+  if (shortfallProbability > 0.25) {
+    moves.push({
+      title: 'Blindar contra shortfall',
+      description: `A probabilidade de não atingir a meta prioritária é de ${(shortfallProbability * 100).toFixed(1)}%. Reforce aportes ou ajuste metas para reduzir o risco.`,
       timeHorizon: '0-3 meses',
       impact: 'alto'
     })
@@ -92,6 +120,11 @@ function buildRiskMitigation (input, simulation) {
 export function buildRecommendations (input, simulation) {
   const savingsRate = simulation.summary.savingsRate
   const runwayMonths = input.monthlyExpenses > 0 ? input.currentSavings / input.monthlyExpenses : 0
+  const goalsInsights = simulation.summary.goals || []
+  const primaryGoal = goalsInsights[0]
+  const totalAdditionalContribution = goalsInsights.reduce((acc, goal) => acc + goal.additionalMonthlyContribution, 0)
+  const shortfallProbability = simulation.summary.shortfallProbability ?? 0
+  const financialIndependenceIndex = simulation.summary.financialIndependenceIndex ?? 0
 
   const quickWins = []
 
@@ -116,6 +149,13 @@ export function buildRecommendations (input, simulation) {
     })
   }
 
+  if (financialIndependenceIndex < 0.6) {
+    quickWins.push({
+      title: 'Turbinar independência financeira',
+      description: 'Avalie aumentar aportes em ativos geradores de renda (FIIs, Tesouro IPCA+) para aproximar o fluxo passivo dos seus gastos mensais.'
+    })
+  }
+
   const expenseCuts = buildExpenseCuts(input)
   const strategicMoves = buildStrategicMoves(input, simulation)
   const riskMitigation = buildRiskMitigation(input, simulation)
@@ -128,8 +168,12 @@ export function buildRecommendations (input, simulation) {
     kpis: {
       savingsRate: Math.max(savingsRate, 0),
       runwayMonths,
-      requiredMonthlyContribution: simulation.summary.requiredMonthlyContribution,
-      goalAchieved: simulation.summary.baseline.goalAchieved
+      requiredMonthlyContribution: totalAdditionalContribution,
+      primaryGoalAchieved: primaryGoal ? primaryGoal.achievedBaseline : null,
+      goalsAchievedCount: simulation.summary.baseline?.goalsAchievedCount ?? 0,
+      totalGoals: goalsInsights.length,
+      shortfallProbability,
+      financialIndependenceIndex
     }
   }
 }

@@ -58,18 +58,35 @@ function buildEvents (baseline, input, summary) {
     })
   }
 
-  if (summary?.baseline?.goalAchieved) {
-    const month = summary.baseline.goalAchievedMonth
-    const point = timelineMap.get(month)
+  const baselineGoals = summary?.baseline?.goals ?? []
+  baselineGoals.forEach((goal) => {
+    const targetPoint = timelineMap.get(goal.targetMonth)
+    const targetYear = Math.ceil((goal.targetMonth ?? 12) / 12)
+    const shortfall = goal.shortfall ?? 0
+
     events.push({
-      id: 'goal-achieved',
-      month,
-      value: point?.balance ?? summary.baseline.finalBalance,
-      color: '#38bdf8',
-      label: 'Meta atingida',
-      description: `Meta alcançada em ${Math.ceil(month / 12)}º ano`
+      id: `goal-target-${goal.id}`,
+      month: goal.targetMonth,
+      value: targetPoint?.balance ?? goal.targetAmount,
+      color: goal.achievedWithinTarget ? '#38bdf8' : '#facc15',
+      label: goal.achievedWithinTarget ? `Meta no prazo: ${goal.name}` : `Meta pendente: ${goal.name}`,
+      description: goal.achievedWithinTarget
+        ? `"${goal.name}" alcançada até o ${targetYear}º ano.`
+        : `Faltam R$ ${shortfall.toLocaleString('pt-BR')} para "${goal.name}" no ${targetYear}º ano.`
     })
-  }
+
+    if (!goal.achievedWithinTarget && goal.projectedAchievementMonth) {
+      const projectedPoint = timelineMap.get(goal.projectedAchievementMonth)
+      events.push({
+        id: `goal-projected-${goal.id}`,
+        month: goal.projectedAchievementMonth,
+        value: projectedPoint?.balance ?? goal.targetAmount,
+        color: '#10b981',
+        label: `Meta alcançada (atraso): ${goal.name}`,
+        description: `"${goal.name}" só é alcançada no ${goal.projectedAchievementYear ?? Math.ceil(goal.projectedAchievementMonth / 12)}º ano com o plano atual.`
+      })
+    }
+  })
 
   return events
 }
