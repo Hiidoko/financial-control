@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { runSimulation } from '../services/api.js'
+import { runSimulation } from '@/services/api.js'
 import { decryptShareFragment, extractShareFragment } from '../utils/exporters.js'
 
 const defaultExpenses = [

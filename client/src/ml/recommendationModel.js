@@ -1,9 +1,18 @@
-import * as tf from '@tensorflow/tfjs'
-
 let modelInstance
 let trainingPromise
+let tfModule
+let tfImportPromise
 
-function buildModel () {
+async function loadTf () {
+  if (tfModule) return tfModule
+  if (!tfImportPromise) {
+    tfImportPromise = import('@tensorflow/tfjs').then((mod) => mod.default ?? mod)
+  }
+  tfModule = await tfImportPromise
+  return tfModule
+}
+
+function buildModel (tf) {
   const model = tf.sequential()
   model.add(tf.layers.dense({ units: 8, activation: 'relu', inputShape: [3] }))
   model.add(tf.layers.dense({ units: 6, activation: 'relu' }))
@@ -12,7 +21,7 @@ function buildModel () {
   return model
 }
 
-function generateSyntheticDataset () {
+function generateSyntheticDataset (tf) {
   const baseSamples = [
     { features: [0.05, 0.92, 0.1], label: [1, 0, 0] },
     { features: [0.08, 0.88, 0.15], label: [1, 0, 0] },
@@ -52,13 +61,13 @@ function generateSyntheticDataset () {
   return { xs, ys }
 }
 
-async function ensureModelTrained () {
+async function ensureModelTrained (tf) {
   if (modelInstance) return modelInstance
   if (trainingPromise) return trainingPromise
 
   trainingPromise = (async () => {
-    modelInstance = buildModel()
-    const { xs, ys } = generateSyntheticDataset()
+    modelInstance = buildModel(tf)
+    const { xs, ys } = generateSyntheticDataset(tf)
     await modelInstance.fit(xs, ys, {
       epochs: 120,
       shuffle: true,
@@ -115,7 +124,8 @@ function buildExplanation (inputs, action) {
 }
 
 export async function getBehaviorAdvice ({ savingsRate, expenseRatio, goalProgress }) {
-  const model = await ensureModelTrained()
+  const tf = await loadTf()
+  const model = await ensureModelTrained(tf)
   const input = tf.tensor2d([[
     Math.min(Math.max(savingsRate, 0), 1),
     Math.min(Math.max(expenseRatio, 0), 1),

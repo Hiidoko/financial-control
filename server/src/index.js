@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import compression from 'compression'
 import { createServer } from 'node:http'
 
 import simulationRouter from './routes/simulation.js'
@@ -9,6 +10,7 @@ const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 4000
 const MAX_PORT_ATTEMPTS = 5
 
 app.use(cors())
+app.use(compression())
 app.use(express.json({ limit: '1mb' }))
 
 app.get('/api/health', (req, res) => {

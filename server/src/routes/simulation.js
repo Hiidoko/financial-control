@@ -4,6 +4,7 @@ import { ZodError } from 'zod'
 import { parseSimulationInput } from '../utils/validators.js'
 import { buildSimulationResult } from '../services/projectionService.js'
 import { buildRecommendations } from '../services/recommendationService.js'
+import { getCachedSimulation, setCachedSimulation } from '../utils/cache.js'
 
 const router = Router()
 
@@ -36,14 +37,26 @@ router.get('/presets', (req, res) => {
 router.post('/', (req, res, next) => {
   try {
     const input = parseSimulationInput(req.body)
+    const cacheKey = JSON.stringify(input)
+
+    const cachedResponse = getCachedSimulation(cacheKey)
+    if (cachedResponse) {
+      res.setHeader('X-Cache', 'HIT')
+      return res.json(cachedResponse)
+    }
+
     const simulation = buildSimulationResult(input)
     const recommendations = buildRecommendations(input, simulation)
 
-    res.json({
+    const responsePayload = {
       input,
       simulation,
       recommendations
-    })
+    }
+
+    setCachedSimulation(cacheKey, responsePayload)
+    res.setHeader('X-Cache', 'MISS')
+    res.json(responsePayload)
   } catch (error) {
     if (error instanceof ZodError) {
       return res.status(400).json({
