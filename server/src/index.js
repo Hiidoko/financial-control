@@ -1,15 +1,24 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import compression from 'compression'
+import mongoose from 'mongoose'
 import { createServer } from 'node:http'
 
 import simulationRouter from './routes/simulation.js'
+import authRouter from './routes/auth.js'
+import presetsRouter from './routes/presets.js'
+import proRouter from './routes/pro.js'
+import { seedPresets } from './seed/init.js'
 
 const app = express()
-const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 4000
+const DEFAULT_PORT = Number.parseInt(process.env.PORT ?? '4000', 10)
 const MAX_PORT_ATTEMPTS = 5
 
-app.use(cors())
+app.use(cors({
+  origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
+  credentials: true
+}))
 app.use(compression())
 app.use(express.json({ limit: '1mb' }))
 
@@ -17,6 +26,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() })
 })
 
+app.use('/api/auth', authRouter)
+app.use('/api/presets', presetsRouter)
+app.use('/api/pro', proRouter)
 app.use('/api/simulations', simulationRouter)
 
 app.use((err, req, res, next) => {
@@ -27,6 +39,24 @@ app.use((err, req, res, next) => {
     details: err.details || null
   })
 })
+
+async function connectDatabase () {
+  if (!process.env.MONGODB_URI) {
+    console.warn('MONGODB_URI não configurada. Recursos persistentes indisponíveis.')
+    return
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      maxPoolSize: Number.parseInt(process.env.MONGO_MAX_POOL ?? '10', 10)
+    })
+    console.log('Conectado ao MongoDB')
+    await seedPresets()
+  } catch (error) {
+    console.error('Falha ao conectar ao MongoDB', error)
+    process.exit(1)
+  }
+}
 
 function startServer (port = DEFAULT_PORT, attempt = 0) {
   const server = createServer(app)
@@ -52,4 +82,7 @@ function startServer (port = DEFAULT_PORT, attempt = 0) {
   server.listen(port)
 }
 
-startServer()
+(async () => {
+  await connectDatabase()
+  startServer()
+})()

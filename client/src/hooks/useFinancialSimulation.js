@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { runSimulation } from '@/services/api.js'
 import { decryptShareFragment, extractShareFragment } from '../utils/exporters.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
 const defaultExpenses = [
   { category: 'Moradia', amount: 2500 },
@@ -47,6 +48,7 @@ const HISTORY_STORAGE_KEY = 'ffs:history'
 const MAX_HISTORY_ENTRIES = 15
 
 export function useFinancialSimulation () {
+  const { token, user, isPro } = useAuth()
   const [financialData, setFinancialData] = useState(defaultForm)
   const [scenario, setScenario] = useState(defaultScenario)
   const [expensesBreakdown, setExpensesBreakdown] = useState(defaultExpenses)
@@ -134,6 +136,20 @@ export function useFinancialSimulation () {
     ]))
   }, [])
 
+  const adoptGoal = useCallback((goal) => {
+    if (!goal) return
+    setGoals((prev) => ([
+      ...prev,
+      {
+        id: goal.id || `goal-sugerida-${Date.now()}`,
+        name: goal.name || 'Meta sugerida',
+        amount: Number(goal.amount ?? 0),
+        targetYears: Number(goal.targetYears ?? 1),
+        priority: goal.priority || 'media'
+      }
+    ]))
+  }, [])
+
   const removeGoal = useCallback((goalId) => {
     setGoals((prev) => (prev.length > 1 ? prev.filter((goal) => goal.id !== goalId) : prev))
   }, [])
@@ -186,7 +202,7 @@ export function useFinancialSimulation () {
     setError(null)
 
     try {
-      const data = await runSimulation(payload)
+      const data = await runSimulation(payload, token)
       setResults(data)
 
       const payloadClone = JSON.parse(JSON.stringify(payload))
@@ -208,7 +224,7 @@ export function useFinancialSimulation () {
     } finally {
       setIsLoading(false)
     }
-  }, [payload])
+  }, [payload, token])
 
   const applyPayload = useCallback((data) => {
     if (!data) return
@@ -314,7 +330,9 @@ export function useFinancialSimulation () {
     goals,
     taxes,
     annualBonuses,
-  history,
+    history,
+    user,
+    isPro,
     results,
     isLoading,
     error,
@@ -326,6 +344,7 @@ export function useFinancialSimulation () {
     removeExpense,
     updateGoal,
     addGoal,
+  adoptGoal,
     removeGoal,
     updateTax,
     updateAnnualBonus,
@@ -333,6 +352,7 @@ export function useFinancialSimulation () {
     removeAnnualBonus,
     updateHistoryComment,
     restoreSimulation,
+    applyPayload,
     submit
   }
 }

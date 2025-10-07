@@ -7,6 +7,27 @@ vi.mock('@/services/api.js', () => ({
   runSimulation: runSimulationMock
 }))
 
+const authMock = {
+  token: 'test-token',
+  user: {
+    id: 'user-1',
+    name: 'Test User',
+    email: 'test@example.com',
+    role: 'pro'
+  },
+  isPro: true,
+  isLoading: false,
+  error: null,
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+  refreshProfile: vi.fn()
+}
+
+vi.mock('@/context/AuthContext.jsx', () => ({
+  useAuth: () => authMock
+}))
+
 let useFinancialSimulation
 
 beforeAll(async () => {
@@ -156,6 +177,10 @@ describe('useFinancialSimulation hook', () => {
   beforeEach(() => {
     runSimulationMock.mockReset()
     runSimulationMock.mockResolvedValue(mockSimulationResult)
+    authMock.login.mockReset()
+    authMock.register.mockReset()
+    authMock.logout.mockReset()
+    authMock.refreshProfile.mockReset()
   })
 
   it('usa o mock de runSimulation corretamente', async () => {

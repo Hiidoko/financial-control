@@ -4,6 +4,7 @@ import { ZodError } from 'zod'
 import { parseSimulationInput } from '../utils/validators.js'
 import { buildSimulationResult } from '../services/projectionService.js'
 import { buildRecommendations } from '../services/recommendationService.js'
+import { buildRecommendedGoals } from '../services/recommendedGoalsService.js'
 import { getCachedSimulation, setCachedSimulation } from '../utils/cache.js'
 
 const router = Router()
@@ -37,7 +38,12 @@ router.get('/presets', (req, res) => {
 router.post('/', (req, res, next) => {
   try {
     const input = parseSimulationInput(req.body)
-    const cacheKey = JSON.stringify(input)
+    const demographics = req.body.demographics ?? {}
+    const cacheKey = JSON.stringify({
+      input,
+      age: demographics.age ?? req.body.age,
+      householdMembers: demographics.householdMembers ?? req.body.householdMembers ?? 1
+    })
 
     const cachedResponse = getCachedSimulation(cacheKey)
     if (cachedResponse) {
@@ -45,13 +51,20 @@ router.post('/', (req, res, next) => {
       return res.json(cachedResponse)
     }
 
-    const simulation = buildSimulationResult(input)
-    const recommendations = buildRecommendations(input, simulation)
+  const simulation = buildSimulationResult(input)
+  const recommendations = buildRecommendations(input, simulation)
+    const recommendedGoals = buildRecommendedGoals({
+      monthlyIncome: input.monthlyIncome,
+      monthlyExpenses: input.monthlyExpenses,
+      age: demographics.age ?? req.body.age,
+      householdMembers: demographics.householdMembers ?? req.body.householdMembers ?? 1
+    })
 
     const responsePayload = {
       input,
       simulation,
-      recommendations
+      recommendations,
+      recommendedGoals
     }
 
     setCachedSimulation(cacheKey, responsePayload)

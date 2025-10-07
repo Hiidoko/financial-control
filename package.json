@@ -3,11 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "start": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "start:server": "npm run dev --prefix server",
     "start:client": "npm run dev --prefix client"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
   }
 }
