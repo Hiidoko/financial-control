@@ -12,6 +12,7 @@ function formatDate (timestamp) {
 
 export function SimulationHistory ({ history, onUpdateComment, onRestore }) {
   const [selectedIds, setSelectedIds] = useState([])
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const toggleSelected = (id) => {
     setSelectedIds((prev) => {
@@ -90,78 +91,103 @@ export function SimulationHistory ({ history, onUpdateComment, onRestore }) {
   }
 
   return (
-    <section className="panel">
-      <h3 className="panel-title">Histórico de simulações</h3>
-      <p className="panel-subtitle">Selecione até duas simulações para comparar resultados e registre aprendizados.</p>
+    <section className={`panel ${isCollapsed ? 'panel--collapsed' : ''}`}>
+      <header className="panel-header">
+        <div>
+          <h3 className="panel-title">Histórico de simulações</h3>
+          <p className="panel-subtitle">
+            {isCollapsed
+              ? 'Histórico recolhido. Expanda para revisar comparações recentes.'
+              : 'Selecione até duas simulações para comparar resultados e registre aprendizados.'}
+          </p>
+        </div>
+        <div className="history-toolbar">
+          <span className="history-counter" aria-live="polite">
+            {history.length} {history.length === 1 ? 'entrada' : 'entradas'}
+          </span>
+          <button
+            type="button"
+            className="button-ghost button-ghost--compact"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-expanded={!isCollapsed}
+          >
+            {isCollapsed ? 'Expandir histórico' : 'Recolher histórico'}
+          </button>
+        </div>
+      </header>
 
-      <div className="history-list">
-        {history.map((entry) => (
-          <article key={entry.id} className={`history-card ${selectedIds.includes(entry.id) ? 'history-card--selected' : ''}`}>
-            <header className="flex-between">
-              <div>
-                <strong>{entry.label}</strong>
-                <p className="metric-subtext">Rodada em {formatDate(entry.timestamp)}</p>
-              </div>
-              <div className="history-actions">
-                <button type="button" className="button-ghost" onClick={() => toggleSelected(entry.id)}>
-                  {selectedIds.includes(entry.id) ? 'Remover comparação' : 'Comparar'}
-                </button>
-                <button type="button" className="button-ghost" onClick={() => onRestore(entry.id, { autoRun: true })}>
-                  Recarregar plano
-                </button>
-              </div>
-            </header>
-
-            <div className="history-metrics">
-              <span>Saldo final: {formatCurrency(entry.summary?.baseline?.finalBalance ?? 0)}</span>
-              <span>Shortfall: {formatPercent(entry.summary?.shortfallProbability ?? 0)}</span>
-              {entry.recommendations?.persona?.name && (
-                <span>Persona: {entry.recommendations.persona.name}</span>
-              )}
-            </div>
-
-            <label className="stack-space" style={{ marginTop: '12px' }}>
-              <span className="metric-subtext">Comentários</span>
-              <textarea
-                className="input-control"
-                rows={2}
-                value={entry.comment || ''}
-                placeholder="Anote percepções ou próximos passos"
-                onChange={(event) => onUpdateComment(entry.id, event.target.value)}
-              />
-            </label>
-          </article>
-        ))}
-      </div>
-
-      {comparison && (
-        <div className="history-comparison">
-          <h4>Comparação lado a lado</h4>
-          <div className="comparison-grid">
-            <div>
-              <strong>{comparison.first.label}</strong>
-            </div>
-            <div>
-              <strong>{comparison.second.label}</strong>
-            </div>
-            {comparison.metrics.map((metric) => (
-              <Fragment key={metric.key}>
-                <div>
-                  <span className="metric-label">{metric.label}</span>
-                  <div className="metric-value">
-                    {metric.format(metric.firstValue, comparison.first)}
+      {!isCollapsed && (
+        <>
+          <div className="history-list">
+            {history.map((entry) => (
+              <article key={entry.id} className={`history-card ${selectedIds.includes(entry.id) ? 'history-card--selected' : ''}`}>
+                <header className="flex-between">
+                  <div>
+                    <strong>{entry.label}</strong>
+                    <p className="metric-subtext">Rodada em {formatDate(entry.timestamp)}</p>
                   </div>
-                </div>
-                <div>
-                  <span className="metric-label">{metric.label}</span>
-                  <div className="metric-value">
-                    {metric.format(metric.secondValue, comparison.second)}
+                  <div className="history-actions">
+                    <button type="button" className="button-ghost" onClick={() => toggleSelected(entry.id)}>
+                      {selectedIds.includes(entry.id) ? 'Remover comparação' : 'Comparar'}
+                    </button>
+                    <button type="button" className="button-ghost" onClick={() => onRestore(entry.id, { autoRun: true })}>
+                      Recarregar plano
+                    </button>
                   </div>
+                </header>
+
+                <div className="history-metrics">
+                  <span>Saldo final: {formatCurrency(entry.summary?.baseline?.finalBalance ?? 0)}</span>
+                  <span>Shortfall: {formatPercent(entry.summary?.shortfallProbability ?? 0)}</span>
+                  {entry.recommendations?.persona?.name && (
+                    <span>Persona: {entry.recommendations.persona.name}</span>
+                  )}
                 </div>
-              </Fragment>
+
+                <label className="stack-space" style={{ marginTop: '12px' }}>
+                  <span className="metric-subtext">Comentários</span>
+                  <textarea
+                    className="input-control"
+                    rows={2}
+                    value={entry.comment || ''}
+                    placeholder="Anote percepções ou próximos passos"
+                    onChange={(event) => onUpdateComment(entry.id, event.target.value)}
+                  />
+                </label>
+              </article>
             ))}
           </div>
-        </div>
+
+          {comparison && (
+            <div className="history-comparison">
+              <h4>Comparação lado a lado</h4>
+              <div className="comparison-grid">
+                <div>
+                  <strong>{comparison.first.label}</strong>
+                </div>
+                <div>
+                  <strong>{comparison.second.label}</strong>
+                </div>
+                {comparison.metrics.map((metric) => (
+                  <Fragment key={metric.key}>
+                    <div>
+                      <span className="metric-label">{metric.label}</span>
+                      <div className="metric-value">
+                        {metric.format(metric.firstValue, comparison.first)}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="metric-label">{metric.label}</span>
+                      <div className="metric-value">
+                        {metric.format(metric.secondValue, comparison.second)}
+                      </div>
+                    </div>
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </section>
   )
@@ -178,4 +204,8 @@ SimulationHistory.propTypes = {
   })),
   onUpdateComment: PropTypes.func.isRequired,
   onRestore: PropTypes.func.isRequired
+}
+
+SimulationHistory.defaultProps = {
+  history: []
 }

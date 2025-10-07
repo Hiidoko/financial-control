@@ -377,6 +377,11 @@ export default function App () {
 
   const tourSteps = useMemo(() => [
     {
+      target: '[data-tour="tour-button"]',
+      placement: 'bottom',
+      content: 'Use este menu para iniciar o assistente guiado sempre que quiser revisitar as principais áreas do simulador.'
+    },
+    {
       target: '[data-tour="form"]',
       content: 'Comece preenchendo renda, despesas, patrimônio e suas metas para personalizar todas as projeções.'
     },
@@ -433,25 +438,26 @@ export default function App () {
         locale={{ back: 'Voltar', close: 'Fechar', last: 'Finalizar', next: 'Próximo', skip: 'Pular' }}
       />
 
-      <header style={{ marginBottom: '28px' }}>
-        <div className="auth-banner">
-          <div className="auth-banner__identity">
-            <span className="auth-banner__greeting">Bem-vindo, {displayName}.</span>
+      <header className="dashboard-header">
+        <div className="dashboard-header__top">
+          <div className="dashboard-header__identity">
+            <span className="dashboard-header__greeting">Bem-vindo, {displayName}.</span>
+            {authIsPro && (
+              <span className="dashboard-header__experience">Experiência Pro 2025</span>
+            )}
             <span className={`plan-chip ${authIsPro ? 'plan-chip--pro' : 'plan-chip--basic'}`}>
               {authIsPro ? 'Plano Pro ativo' : 'Plano Basic'}
             </span>
           </div>
-          <div className="auth-banner__actions">
-            <button type="button" className="toggle-button" onClick={logout}>
-              Sair
-            </button>
-          </div>
+          <button type="button" className="toggle-button dashboard-header__logout" onClick={logout}>
+            Sair
+          </button>
         </div>
 
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Simulador de Futuro Financeiro</h1>
-        <p style={{ marginTop: '8px', maxWidth: '640px' }}>
-          {headerSubtitle}
-        </p>
+        <div className="dashboard-header__title">
+          <h1>Simulador de Futuro Financeiro</h1>
+          <p>{headerSubtitle}</p>
+        </div>
 
         <div className={`plan-highlight ${authIsPro ? 'plan-highlight--pro' : 'plan-highlight--basic'}`}>
           {authIsPro ? (
@@ -465,7 +471,7 @@ export default function App () {
           )}
         </div>
 
-        <div className="header-controls" data-tour="dashboard-controls">
+  <div className="header-controls dashboard-header__controls" data-tour="dashboard-controls">
           <button type="button" className="toggle-button" data-tour="theme-toggle" onClick={toggleTheme}>
             {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
           </button>

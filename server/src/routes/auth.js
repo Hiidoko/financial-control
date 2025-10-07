@@ -1,13 +1,22 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
+import mongoose from 'mongoose'
 import { z } from 'zod'
 
 import User from '../models/User.js'
 import { signToken } from '../utils/auth.js'
 import { buildRecommendedGoals } from '../services/recommendedGoalsService.js'
 import { authenticate } from '../middleware/auth.js'
+import {
+  getDemoUserProfile,
+  isDemoCredential
+} from '../utils/demoUser.js'
 
 const router = Router()
+
+
+const isDatabaseReady = () => mongoose.connection.readyState === 1
+
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -20,6 +29,13 @@ const registerSchema = z.object({
 
 router.post('/register', async (req, res) => {
   try {
+    if (!isDatabaseReady()) {
+      return res.status(503).json({
+        error: 'Cadastro indisponível no modo demonstração',
+        demo: true
+      })
+    }
+
     const payload = registerSchema.parse(req.body)
 
     const existing = await User.findOne({ email: payload.email })
@@ -77,6 +93,22 @@ const loginSchema = z.object({
 router.post('/login', async (req, res) => {
   try {
     const payload = loginSchema.parse(req.body)
+    if (isDemoCredential(payload)) {
+      const demoUser = getDemoUserProfile()
+      const token = signToken({ id: demoUser.id, role: demoUser.role })
+      return res.json({
+        token,
+        user: demoUser,
+        demo: true
+      })
+    }
+
+    if (!isDatabaseReady()) {
+      return res.status(503).json({
+        error: 'Serviço de autenticação indisponível — configure o banco ou use o acesso demo.',
+        demo: true
+      })
+    }
     const user = await User.findOne({ email: payload.email })
     if (!user) {
       return res.status(401).json({ error: 'Credenciais inválidas' })

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 
 import { useAuth } from '@/context/AuthContext.jsx'
@@ -26,6 +26,24 @@ const HERO_METRICS = [
   { label: 'Tempo economizado', value: '12h / mês' }
 ]
 
+const DEMO_CREDENTIALS = {
+  email: 'demo.pro@financialfuture.dev',
+  password: 'Pro!Demo2025'
+}
+
+const PLAN_COMPARISON = {
+  basic: [
+    'Simulações ilimitadas com presets certificados e exportação padrão (PDF/CSV).',
+    'Dashboards com KPIs essenciais, metas individuais e linha do tempo automática.',
+    'Suporte por email em horário comercial e segurança com criptografia AES-256.'
+  ],
+  pro: [
+    'Comparativos ANBIMA avançados, testes de estresse e recomendações assistidas por IA.',
+    'Integração Open Finance, metas colaborativas e relatórios com assinatura digital.',
+    'Exportação avançada (Excel multi-aba, links criptografados) e suporte prioritário 24/7.'
+  ]
+}
+
 export function AuthScreen () {
   const { login, register, error, isLoading } = useAuth()
   const [mode, setMode] = useState('login')
@@ -38,12 +56,30 @@ export function AuthScreen () {
     role: 'basic'
   })
   const [submitError, setSubmitError] = useState(null)
+  const [showProModal, setShowProModal] = useState(false)
 
   const handleChange = (field, value) => {
     setFormState((prev) => ({
       ...prev,
       [field]: value
     }))
+  }
+
+  const handleDemoLogin = async () => {
+    setSubmitError(null)
+    setMode('login')
+    setFormState((prev) => ({
+      ...prev,
+      email: DEMO_CREDENTIALS.email,
+      password: DEMO_CREDENTIALS.password,
+      role: 'pro'
+    }))
+
+    try {
+      await login(DEMO_CREDENTIALS)
+    } catch (err) {
+      setSubmitError(err.message)
+    }
   }
 
   const handleSubmit = async (event) => {
@@ -72,6 +108,19 @@ export function AuthScreen () {
     setSubmitError(null)
   }
 
+  useEffect(() => {
+    if (!showProModal) return
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowProModal(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showProModal])
+
   return (
     <div className="auth-landing">
       <div className="auth-landing__gradient" aria-hidden="true" />
@@ -85,9 +134,15 @@ export function AuthScreen () {
           </div>
         </div>
         <div className="auth-nav-actions">
-          <span className="auth-nav-badge">Nova versão Pro 2025</span>
-          <button type="button" className="auth-nav-link" onClick={switchMode}>
-            {mode === 'login' ? 'Criar conta agora' : 'Entrar com minha conta'}
+          <button
+            type="button"
+            className="auth-nav-badge auth-nav-badge--button"
+            onClick={() => setShowProModal(true)}
+          >
+            Nova versão Pro 2025
+          </button>
+          <button type="button" className="auth-nav-demo" onClick={handleDemoLogin}>
+            Testar demo agora
           </button>
         </div>
       </header>
@@ -235,6 +290,79 @@ export function AuthScreen () {
           </div>
         </aside>
       </main>
+
+      {showProModal && (
+        <div className="pro-modal" role="dialog" aria-modal="true" aria-labelledby="proModalTitle">
+          <div className="pro-modal__overlay" onClick={() => setShowProModal(false)} />
+          <div className="pro-modal__content">
+            <header className="pro-modal__header">
+              <div>
+                <span className="pro-modal__badge">Nova versão Pro 2025</span>
+                <h2 id="proModalTitle">Comparativo de planos</h2>
+              </div>
+              <button type="button" className="pro-modal__close" onClick={() => setShowProModal(false)} aria-label="Fechar comparação">
+                ✕
+              </button>
+            </header>
+
+            <p className="pro-modal__intro">
+              Descubra o que a experiência Pro adiciona ao simulador essencial. Recursos colaborativos, exportações avançadas e IA comportamental elevam seus planos ao próximo nível.
+            </p>
+
+            <div className="pro-modal__comparison">
+              <article className="pro-modal__card pro-modal__card--basic">
+                <header>
+                  <span>Plano Essencial</span>
+                  <strong>Tudo o que você precisa para começar</strong>
+                </header>
+                <ul>
+                  {PLAN_COMPARISON.basic.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="pro-modal__card pro-modal__card--pro">
+                <header>
+                  <span>Plano Pro</span>
+                  <strong>Experiência completa para estrategistas</strong>
+                  <small>Inclui tudo do Essencial + benefícios exclusivos</small>
+                </header>
+                <ul>
+                  {PLAN_COMPARISON.pro.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+
+            <footer className="pro-modal__footer">
+              <button
+                type="button"
+                className="button-primary pro-modal__cta"
+                onClick={() => {
+                  setShowProModal(false)
+                  handleDemoLogin()
+                }}
+              >
+                Vivenciar versão Pro agora
+              </button>
+              <button
+                type="button"
+                className="button-ghost"
+                onClick={() => {
+                  setShowProModal(false)
+                  if (mode === 'login') {
+                    switchMode()
+                  }
+                }}
+              >
+                Criar conta básica gratuita
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

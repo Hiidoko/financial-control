@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 import User from '../models/User.js'
+import { getDemoUserDocument, isDemoUserId } from '../utils/demoUser.js'
 
 function extractToken (req) {
   const header = req.headers.authorization
@@ -17,6 +19,14 @@ export async function authenticate (req, res, next) {
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET)
+    if (isDemoUserId(payload.sub)) {
+      req.user = getDemoUserDocument()
+      return next()
+    }
+    if (!mongoose.isValidObjectId(payload.sub)) {
+      return res.status(401).json({ error: 'Sessão inválida' })
+    }
+
     const user = await User.findById(payload.sub)
     if (!user) {
       return res.status(401).json({ error: 'Sessão inválida' })

@@ -1,6 +1,8 @@
 # Financial Future Simulator
 
 > 🚧 **Projeto em construção ativo.** As features, APIs e políticas de segurança ainda estão em evolução — avalie com cuidado antes de utilizar em produção.
+>
+> ⚠️ **Estado atual:** estamos iterando e estudando novas abordagens. É esperado encontrar falhas visuais provisórias, fluxos incompletos e ajustes funcionais pendentes enquanto validamos hipóteses.
 
 Aplicação full-stack JavaScript que combina planejamento financeiro avançado, recomendações assistidas por IA e experiências colaborativas. A proposta é oferecer uma jornada completa: da prospecção (landing/login) à simulação de cenários, passando por exportações seguras e insights Pro. O foco está em UX polida, acessibilidade desde o início e arquitetura modular pronta para escalar.
 

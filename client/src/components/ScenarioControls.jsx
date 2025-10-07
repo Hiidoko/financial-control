@@ -106,3 +106,7 @@ ScenarioControls.propTypes = {
   onChange: PropTypes.func.isRequired,
   tourId: PropTypes.string
 }
+
+ScenarioControls.defaultProps = {
+  tourId: undefined
+}
