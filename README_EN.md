@@ -6,8 +6,8 @@
 
 **Live demo:** https://financial-control-d0ix.onrender.com  
 **Screenshots:**  
-![Dashboard](./img/print_1.jpg)  
-![Pro Suite](./img/print_2.jpg)
+![Dashboard](./img/print_1.png)  
+![Pro Suite](./img/print_2.png)
 
 > Status: advanced iterative development. Suitable for study / experimentation. Additional hardening required for regulated production contexts (security, audit, resilience).
 
@@ -163,14 +163,6 @@ The server searches `server/public`, then `client/dist` (or `CLIENT_DIST_PATH` o
 | GET  | `/api/pro/open-finance/snapshot` | Synthetic Open Finance snapshot |
 
 ---
-## 🛣️ Roadmap (Highlights)
-- Public deployment CI/CD + DB provisioning.
-- Enriched recommendation model (more signals / personalization).
-- Consolidated multi‑section PDF export.
-- MFA + secure password recovery.
-- E2E tests (Playwright) from onboarding ➜ simulation ➜ export.
-- Observability (structured logging, trace correlation, metrics).
-- Goal progress forecasting refinements & portfolio allocation angle (future).
 
 ---
 ## ♿ Accessibility & UX

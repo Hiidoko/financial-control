@@ -64,7 +64,7 @@ export function AuthScreen () {
   })
   const [submitError, setSubmitError] = useState(null)
   const [showProModal, setShowProModal] = useState(false)
-  const [emailStatus, setEmailStatus] = useState('idle') // idle|checking|exists|available|invalid
+  const [emailStatus, setEmailStatus] = useState('idle')
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: 'Fraca' })
   const emailCheckTimer = useRef(null)
@@ -190,7 +190,6 @@ export function AuthScreen () {
         </div>
         <nav className="auth-header__nav" aria-label="Ações primárias">
           <button type="button" className="pill pill--outline" onClick={() => setShowProModal(true)}>Plano Pro 2025</button>
-          {/* Botão de demo removido por solicitação */}
         </nav>
       </header>
 

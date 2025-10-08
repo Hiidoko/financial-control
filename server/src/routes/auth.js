@@ -85,7 +85,7 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// Validação inline de email já utilizado (sem expor se banco não está pronto)
+
 router.get('/check-email', async (req, res) => {
   try {
     const email = String(req.query.email || '').trim().toLowerCase()

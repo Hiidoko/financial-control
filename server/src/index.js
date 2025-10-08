@@ -20,12 +20,7 @@ const MAX_PORT_ATTEMPTS = 5
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-// Novo: servir build do client gerado em server/public (configurado no Vite)
-// Permite que o deploy funcione mesmo quando apenas a pasta "server" é publicada.
-// Ordem de precedência para localizar build (permite migração suave):
-// 1. Variável de ambiente CLIENT_DIST_PATH
-// 2. server/public (novo padrão)
-// 3. ../../client/dist (padrão antigo quando repo raiz é deployado)
+
 const candidatePaths = [
   process.env.CLIENT_DIST_PATH,
   path.resolve(__dirname, '../public'),
@@ -65,13 +60,12 @@ if (clientDistPath && clientIndexPath && fs.existsSync(clientIndexPath)) {
   console.warn('[Static] Build do client não encontrado. Execute o build: `npm run build` na raiz ou defina CLIENT_DIST_PATH.')
 }
 
-// Fallback SPA e root. Mantido fora do bloco acima para sempre responder a '/'
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next()
   if (clientIndexPath && fs.existsSync(clientIndexPath)) {
     return res.sendFile(clientIndexPath)
   }
-  // Resposta informativa quando não há build
+
   if (req.path === '/' || req.path === '/index.html') {
     return res.status(200).send('API online. Build do frontend ausente. Rode: npm run build')
   }
@@ -115,7 +109,7 @@ function startServer (port = DEFAULT_PORT, attempt = 0) {
     const host = process.env.HOST || 'localhost'
     const baseUrl = `http://${host}:${port}/`
     console.log(`Servidor de simulações financeiras rodando na porta ${port}`)
-    console.log(`\n━━━━ Link de acesso ━━━━\n${baseUrl}\n━━━━━━━━━━━━━━━━━━━━━━━━`) // bloco visual simples
+  console.log(`\n━━━━ Link de acesso ━━━━\n${baseUrl}\n━━━━━━━━━━━━━━━━━━━━━━━━`)
     console.log(`Health: ${baseUrl}api/health`)
   })
 

@@ -15,7 +15,7 @@
 
 ## 🌐 Idiomas
 
-- **Português (Brasil)** *(documentação principal)*
+- **Português (Brasil)**
 - English *(coming soon)*
 
 ## 🔍 Visão Geral do Produto
@@ -229,15 +229,6 @@ Payload típico de simulação (resumo):
 	"annualBonuses": [{ "label": "13º", "month": 12, "amount": 9000 }]
 }
 ```
-
-## 🛣️ Roadmap (Resumo)
-
-- [ ] Deploy público (Render/Vercel + Atlas) com CI/CD.
-- [ ] Autenticação multifator e recuperação segura.
-- [ ] Persistência de histórico e presets customizados por usuário.
-- [ ] Testes ponta a ponta (Playwright) cobrindo landing ➜ login ➜ simulação.
-- [ ] Monitoramento (Pino, OpenTelemetry) e observabilidade pró-ativa.
-- [ ] Automação de relatórios PDF + assinatura digital.
 
 ## ♿ Acessibilidade & UX
 
