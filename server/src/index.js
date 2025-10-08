@@ -39,14 +39,14 @@ app.use('/api/presets', presetsRouter)
 app.use('/api/pro', proRouter)
 app.use('/api/simulations', simulationRouter)
 
-if (process.env.NODE_ENV === 'production' && fs.existsSync(clientDistPath)) {
+if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath))
 
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next()
     res.sendFile(clientIndexPath)
   })
-} else if (process.env.NODE_ENV === 'production') {
+} else {
   console.warn('Build do client não encontrado. Verifique se `npm run build --prefix client` foi executado.')
 }
 
