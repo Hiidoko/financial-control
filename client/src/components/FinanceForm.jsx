@@ -1,4 +1,7 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 
 const fieldConfig = [
   { key: 'monthlyIncome', label: 'Renda mensal (R$)', step: 100, min: 0 },
@@ -37,29 +40,63 @@ export function FinanceForm ({
   isLoading,
   tourId
 }) {
+  const [removingGoals, setRemovingGoals] = useState(new Set())
+  const [removingBonuses, setRemovingBonuses] = useState(new Set())
+  const [removingExpenses, setRemovingExpenses] = useState(new Set())
+
+  const REMOVAL_ANIMATION_MS = 220
+
+  const scheduleGoalRemoval = (goalId) => {
+    setRemovingGoals(prev => new Set(prev).add(goalId))
+    setTimeout(() => { onRemoveGoal(goalId) }, REMOVAL_ANIMATION_MS)
+  }
+  const scheduleBonusRemoval = (bonusId) => {
+    setRemovingBonuses(prev => new Set(prev).add(bonusId))
+    setTimeout(() => { onRemoveBonus(bonusId) }, REMOVAL_ANIMATION_MS)
+  }
+  const scheduleExpenseRemoval = (index, key) => {
+    setRemovingExpenses(prev => new Set(prev).add(key))
+    setTimeout(() => { onRemoveExpense(index) }, REMOVAL_ANIMATION_MS)
+  }
+
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('finance-form', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
+
   return (
     <section className="panel" data-tour={tourId}>
-      <header className="panel-header">
+      <header className="panel-header panel-header--with-toggle">
         <h2 className="panel-title">Perfil financeiro</h2>
-        <p className="panel-subtitle">Preencha seus dados para gerar projeções personalizadas.</p>
+        {!collapsed && <p className="panel-subtitle">Preencha seus dados para gerar projeções personalizadas.</p>}
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher formulário financeiro"
+          labelExpand="Expandir formulário financeiro"
+          size="sm"
+          controls={contentId}
+        />
       </header>
 
-      <form
-        className="stack-space form-stack"
-        onSubmit={(event) => {
-          event.preventDefault()
-          onSubmit()
-        }}
-      >
-        <div className="form-section form-section--grid" id="financial-section-core" data-tour="form-inputs">
+      {shouldRender && (
+        <form
+          ref={contentRef}
+          id={contentId}
+          className="stack-space form-stack collapsible-content-wrapper collapsible-fade"
+          aria-hidden={collapsed}
+          onSubmit={(event) => {
+            event.preventDefault()
+            onSubmit()
+          }}
+        >
+  <div className="form-section form-section--grid form-section--full" id="financial-section-core" data-tour="form-inputs">
           <div className="form-section__header">
             <div>
               <h3 className="form-section__title">Dados principais</h3>
               <p className="form-section__description">Ajuste os valores base que alimentam todos os cenários e projeções.</p>
             </div>
           </div>
-          <div className="form-section__content">
-            <div className="form-grid">
+          <div className="form-section__content form-section__content--full">
+            <div className="form-grid form-grid--full">
               {fieldConfig.map((field) => (
                 <label key={field.key} className="input-field">
                   <span className="input-label">{field.label}</span>
@@ -94,7 +131,7 @@ export function FinanceForm ({
 
           <div className="form-section__content goal-list">
             {goals.map((goal) => (
-              <div key={goal.id} className="goal-item">
+              <div key={goal.id} className={`goal-item${removingGoals.has(goal.id) ? ' is-removing' : ''}`}>
                 <input
                   type="text"
                   className="input-control goal-input goal-input--name"
@@ -132,11 +169,14 @@ export function FinanceForm ({
                 </select>
                 <button
                   type="button"
-                  className="button-ghost button-ghost--compact button-danger"
-                  onClick={() => onRemoveGoal(goal.id)}
+                  className="goal-remove-btn"
+                  onClick={() => goals.length > 1 && scheduleGoalRemoval(goal.id)}
                   disabled={goals.length <= 1}
                 >
-                  <span className="button-icon" aria-hidden="true">✕</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                   <span className="sr-only">Remover meta</span>
                 </button>
               </div>
@@ -198,7 +238,7 @@ export function FinanceForm ({
 
           <div className="form-section__content expense-list">
             {annualBonuses.map((bonus) => (
-              <div key={bonus.id} className="expense-item">
+              <div key={bonus.id} className={`expense-item${removingBonuses.has(bonus.id) ? ' is-removing' : ''}`}>
                 <input
                   type="text"
                   className="input-control expense-input expense-input--label"
@@ -227,10 +267,13 @@ export function FinanceForm ({
                 />
                 <button
                   type="button"
-                  className="button-ghost button-ghost--compact button-danger"
-                  onClick={() => onRemoveBonus(bonus.id)}
+                  className="expense-remove-btn"
+                  onClick={() => scheduleBonusRemoval(bonus.id)}
                 >
-                  <span className="button-icon" aria-hidden="true">✕</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                   <span className="sr-only">Remover bônus</span>
                 </button>
               </div>
@@ -253,8 +296,10 @@ export function FinanceForm ({
           </div>
 
           <div className="form-section__content expense-list">
-            {expenses.map((item, index) => (
-              <div key={`${item.category}-${index}`} className="expense-item">
+            {expenses.map((item, index) => {
+              const rowKey = `${item.category}-${index}`
+              return (
+                <div key={rowKey} className={`expense-item${removingExpenses.has(rowKey) ? ' is-removing' : ''}`}>
                 <input
                   type="text"
                   className="input-control expense-input expense-input--label"
@@ -271,21 +316,26 @@ export function FinanceForm ({
                 />
                 <button
                   type="button"
-                  className="button-ghost button-ghost--compact button-danger"
-                  onClick={() => onRemoveExpense(index)}
+                  className="expense-remove-btn"
+                  onClick={() => scheduleExpenseRemoval(index, rowKey)}
                 >
-                  <span className="button-icon" aria-hidden="true">✕</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                   <span className="sr-only">Remover categoria</span>
                 </button>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
-        <button type="submit" disabled={isLoading} className="button-primary">
-          {isLoading ? 'Calculando projeções...' : 'Gerar simulação'}
-        </button>
-      </form>
+          <button type="submit" disabled={isLoading} className="button-primary">
+            {isLoading ? 'Calculando projeções...' : 'Gerar simulação'}
+          </button>
+        </form>
+      )}
     </section>
   )
 }

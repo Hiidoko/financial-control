@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
 import { Line } from 'react-chartjs-2'
 import { ensureChartRegistration } from '@/utils/chartSetup.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 import { formatCurrency } from '../utils/formatters.js'
 
 ensureChartRegistration()
@@ -26,6 +28,9 @@ export function ProjectionChart ({ scenarios }) {
   if (!scenarios || scenarios.length === 0) {
     return null
   }
+
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('projection-chart', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
 
   const chartData = buildDataset(scenarios)
 
@@ -66,10 +71,29 @@ export function ProjectionChart ({ scenarios }) {
 
   return (
     <div className="chart-card" id="projection-chart">
-      <h3 className="panel-title">Projeção de patrimônio</h3>
-      <div style={{ height: '320px' }}>
-        <Line options={options} data={chartData} />
-      </div>
+      <header className="panel-header panel-header--with-toggle">
+        <h3 className="panel-title">Projeção de patrimônio</h3>
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher projeção"
+          labelExpand="Expandir projeção"
+          size="sm"
+          controls={contentId}
+        />
+      </header>
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade"
+          aria-hidden={collapsed}
+        >
+          <div style={{ height: '320px' }}>
+            <Line options={options} data={chartData} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

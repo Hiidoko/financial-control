@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
+import { CollapseToggle } from './CollapseToggle.jsx'
 import PropTypes from 'prop-types'
 
 import { formatCurrency, formatPercent } from '../utils/formatters.js'
@@ -92,28 +93,21 @@ export function SimulationHistory ({ history, onUpdateComment, onRestore }) {
 
   return (
     <section className={`panel ${isCollapsed ? 'panel--collapsed' : ''}`}>
-      <header className="panel-header">
-        <div>
+      <header className="panel-header panel-header--with-toggle">
+        <div className="panel-header__title-group">
           <h3 className="panel-title">Histórico de simulações</h3>
-          <p className="panel-subtitle">
-            {isCollapsed
-              ? 'Histórico recolhido. Expanda para revisar comparações recentes.'
-              : 'Selecione até duas simulações para comparar resultados e registre aprendizados.'}
-          </p>
+          {!isCollapsed && (
+            <p className="panel-subtitle">Selecione até duas simulações para comparar resultados e registre aprendizados.</p>
+          )}
         </div>
-        <div className="history-toolbar">
-          <span className="history-counter" aria-live="polite">
-            {history.length} {history.length === 1 ? 'entrada' : 'entradas'}
-          </span>
-          <button
-            type="button"
-            className="button-ghost button-ghost--compact"
-            onClick={() => setIsCollapsed((prev) => !prev)}
-            aria-expanded={!isCollapsed}
-          >
-            {isCollapsed ? 'Expandir histórico' : 'Recolher histórico'}
-          </button>
-        </div>
+        <span className="history-counter" aria-live="polite">{history.length} {history.length === 1 ? 'entrada' : 'entradas'}</span>
+        <CollapseToggle
+          collapsed={isCollapsed}
+          onToggle={() => setIsCollapsed(prev => !prev)}
+          labelCollapse="Recolher histórico"
+          labelExpand="Expandir histórico"
+          size="sm"
+        />
       </header>
 
       {!isCollapsed && (

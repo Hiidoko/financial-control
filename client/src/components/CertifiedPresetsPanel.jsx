@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
-
 import { formatCurrency, formatPercent } from '@/utils/formatters.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 
 function CertificationBadge ({ badge, certifiedBy, certificationLevel }) {
   if (!badge && !certifiedBy) return null
@@ -29,84 +30,103 @@ CertificationBadge.propTypes = {
 }
 
 export function CertifiedPresetsPanel ({ presets, isLoading, error, onApply, onRefresh }) {
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('certified-presets', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
   return (
     <section className="panel panel-certified-presets">
-      <header className="panel-header">
+      <header className="panel-header panel-header--with-toggle">
         <div>
           <h3 className="panel-title">Planos certificados ANBIMA</h3>
-          <p className="panel-subtitle">Aplicar um preset ajusta instantaneamente renda, metas e cenários baseados em benchmarks de mercado.</p>
+          {!collapsed && <p className="panel-subtitle">Aplicar um preset ajusta instantaneamente renda, metas e cenários baseados em benchmarks de mercado.</p>}
         </div>
-        <div className="panel-actions">
+        <div className="panel-actions" style={{ paddingRight: '42px' }}>
           <span className="plan-chip plan-chip--pro" aria-hidden="true">Certificado</span>
           <button type="button" className="button-ghost" onClick={onRefresh} disabled={isLoading}>
             Atualizar
           </button>
         </div>
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher presets"
+          labelExpand="Expandir presets"
+          size="sm"
+          controls={contentId}
+        />
       </header>
 
-      {isLoading && (
-        <div className="panel-loading">Carregando carteiras validadas...</div>
-      )}
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade"
+          aria-hidden={collapsed}
+        >
+        {isLoading && (
+          <div className="panel-loading">Carregando carteiras validadas...</div>
+        )}
 
-      {!isLoading && error && (
-        <div className="panel-error">{error}</div>
-      )}
+        {!isLoading && error && (
+          <div className="panel-error">{error}</div>
+        )}
 
-      {!isLoading && !error && (
-        <div className="preset-grid">
-          {presets.length === 0 && (
-            <div className="preset-empty">Nenhum preset certificado disponível no momento.</div>
-          )}
+        {!isLoading && !error && (
+          <div className="preset-grid">
+            {presets.length === 0 && (
+              <div className="preset-empty">Nenhum preset certificado disponível no momento.</div>
+            )}
 
-          {presets.map((preset) => (
-            <article key={preset.slug ?? preset._id} className="preset-card">
-              <div className="preset-card__header">
-                <h4>{preset.title}</h4>
-                <CertificationBadge
-                  badge={preset.badge}
-                  certifiedBy={preset.certifiedBy}
-                  certificationLevel={preset.certificationLevel}
-                />
-              </div>
-
-              <p className="preset-card__description">{preset.description}</p>
-
-              <dl className="preset-card__metrics">
-                <div>
-                  <dt>Renda mensal</dt>
-                  <dd>{formatCurrency(preset.monthlyIncome)}</dd>
+            {presets.map((preset) => (
+              <article key={preset.slug ?? preset._id} className="preset-card">
+                <div className="preset-card__header">
+                  <h4>{preset.title}</h4>
+                  <CertificationBadge
+                    badge={preset.badge}
+                    certifiedBy={preset.certifiedBy}
+                    certificationLevel={preset.certificationLevel}
+                  />
                 </div>
-                <div>
-                  <dt>Gastos certificados</dt>
-                  <dd>{formatCurrency(preset.monthlyExpenses)}</dd>
-                </div>
-                <div>
-                  <dt>Taxa esperada</dt>
-                  <dd>{formatPercent((preset.expectedReturnRate ?? 0) / 100)}</dd>
-                </div>
-                <div>
-                  <dt>Tolerância ao risco</dt>
-                  <dd>{preset.riskTolerance ?? '—'}</dd>
-                </div>
-              </dl>
 
-              <div className="preset-card__goals">
-                <h5>Metas incluídas</h5>
-                <ul>
-                  {preset.goals?.map((goal, index) => (
-                    <li key={goal.name ?? index}>
-                      <strong>{goal.name}</strong>
-                      <span>{formatCurrency(goal.amount)} · {goal.targetYears} anos</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <p className="preset-card__description">{preset.description}</p>
 
-              <button type="button" className="button-primary" onClick={() => onApply(preset)}>
-                Aplicar preset certificado
-              </button>
-            </article>
-          ))}
+                <dl className="preset-card__metrics">
+                  <div>
+                    <dt>Renda mensal</dt>
+                    <dd>{formatCurrency(preset.monthlyIncome)}</dd>
+                  </div>
+                  <div>
+                    <dt>Gastos certificados</dt>
+                    <dd>{formatCurrency(preset.monthlyExpenses)}</dd>
+                  </div>
+                  <div>
+                    <dt>Taxa esperada</dt>
+                    <dd>{formatPercent((preset.expectedReturnRate ?? 0) / 100)}</dd>
+                  </div>
+                  <div>
+                    <dt>Tolerância ao risco</dt>
+                    <dd>{preset.riskTolerance ?? '—'}</dd>
+                  </div>
+                </dl>
+
+                <div className="preset-card__goals">
+                  <h5>Metas incluídas</h5>
+                  <ul>
+                    {preset.goals?.map((goal, index) => (
+                      <li key={goal.name ?? index}>
+                        <strong>{goal.name}</strong>
+                        <span>{formatCurrency(goal.amount)} · {goal.targetYears} anos</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button type="button" className="button-primary" onClick={() => onApply(preset)}>
+                  Aplicar preset certificado
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
         </div>
       )}
     </section>

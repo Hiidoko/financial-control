@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types'
 import { formatCurrency } from '../utils/formatters.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 
 function Section ({ title, description, children }) {
   if (!children) return null
@@ -24,7 +26,8 @@ Section.propTypes = {
 
 export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
   if (!recommendations) return null
-
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('recommendations', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
   const {
     quickWins,
     expenseCuts,
@@ -45,20 +48,34 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
 
   return (
     <section className="panel" id="recommendation-section" data-tour={tourId}>
-      <header className="panel-header flex-between">
+      <header className="panel-header panel-header--with-toggle">
         <div>
           <h2 className="panel-title">Recomendações inteligentes</h2>
-          <p className="panel-subtitle">Sugestões práticas para turbinar sua jornada financeira.</p>
+          {!collapsed && <p className="panel-subtitle">Sugestões práticas para turbinar sua jornada financeira.</p>}
         </div>
-        {aiAdvice && (
-          <div className="tag">
+        {aiAdvice && !collapsed && (
+          <div className="tag" style={{ marginRight: '40px' }}>
             <span>IA sugere:</span>
             <strong>{aiAdvice.highlight}</strong>
           </div>
         )}
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher recomendações"
+          labelExpand="Expandir recomendações"
+          size="sm"
+          controls={contentId}
+        />
       </header>
 
-      <div className="stack-space">
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade stack-space"
+          aria-hidden={collapsed}
+        >
         {persona && (
           <div className="recommendation-card">
             <h4>Perfil financeiro sugerido: {persona.name}</h4>
@@ -142,9 +159,7 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
             </div>
           </Section>
         )}
-      </div>
-
-      {kpis && (
+        {kpis && !collapsed && (
         <footer style={{ marginTop: '24px' }}>
           <div className="metrics-grid">
             <article className="metric-box">
@@ -184,6 +199,8 @@ export function RecommendationPanel ({ recommendations, aiAdvice, tourId }) {
             </article>
           </div>
         </footer>
+        )}
+        </div>
       )}
     </section>
   )

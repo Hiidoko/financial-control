@@ -86,6 +86,7 @@ export default function App () {
 
   const [aiAdvice, setAiAdvice] = useState(null)
   const [isTourRunning, setIsTourRunning] = useState(false)
+  const [showFinanceOverlay, setShowFinanceOverlay] = useState(false)
   const [certifiedPresets, setCertifiedPresets] = useState([])
   const [presetsLoading, setPresetsLoading] = useState(false)
   const [presetsError, setPresetsError] = useState(null)
@@ -447,6 +448,14 @@ export default function App () {
             {authIsPro && <span className="badge badge--pro" title="Plano Pro ativo">Pro</span>}
           </div>
           <div className="dash-hero__actions-minimal" aria-label="Ações do dashboard">
+            <button
+              type="button"
+              className="button-ghost button-ghost--pill dash-hero__finance-btn"
+              onClick={() => setShowFinanceOverlay(true)}
+            >
+              <span className="button-icon" aria-hidden="true">💼</span>
+              <span className="button-text">Perfil financeiro</span>
+            </button>
             <DashboardMenu
               theme={theme}
               toggleTheme={toggleTheme}
@@ -465,32 +474,7 @@ export default function App () {
         </div>
       </header>
 
-      <div className="layout-two-columns">
-        <div className="stacked-cards">
-          <FinanceForm
-            data={financialData}
-            goals={goals}
-            expenses={expensesBreakdown}
-            taxes={taxes}
-            annualBonuses={annualBonuses}
-            onChange={updateFinancialData}
-            onGoalChange={updateGoal}
-            onAddGoal={addGoal}
-            onRemoveGoal={removeGoal}
-            onExpenseChange={updateExpense}
-            onAddExpense={addExpense}
-            onRemoveExpense={removeExpense}
-            onTaxChange={updateTax}
-            onBonusChange={updateAnnualBonus}
-            onAddBonus={addAnnualBonus}
-            onRemoveBonus={removeAnnualBonus}
-            onSubmit={submit}
-            isLoading={isLoading}
-            tourId="form"
-          />
-          <ScenarioControls scenario={scenario} onChange={updateScenario} tourId="scenario" />
-        </div>
-
+      <div className="layout-centered-content">
         <div className="stack-space">
           <CertifiedPresetsPanel
             presets={certifiedPresets}
@@ -549,6 +533,63 @@ export default function App () {
           />
         </div>
       </div>
+
+      {showFinanceOverlay && (
+        <div className="finance-overlay" role="dialog" aria-modal="true" aria-label="Perfil financeiro detalhado">
+          <div className="finance-overlay__backdrop" onClick={() => setShowFinanceOverlay(false)} />
+          <div className="finance-overlay__panel">
+            <header className="finance-overlay__header">
+              <h2>Perfil financeiro</h2>
+              <button
+                type="button"
+                className="button-ghost button-ghost--compact finance-overlay__close"
+                onClick={() => setShowFinanceOverlay(false)}
+                aria-label="Fechar"
+              >
+                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                </svg>
+              </button>
+            </header>
+            <div className="finance-overlay__content">
+              <div className="finance-overlay__form-block">
+                <FinanceForm
+                  data={financialData}
+                  goals={goals}
+                  expenses={expensesBreakdown}
+                  taxes={taxes}
+                  annualBonuses={annualBonuses}
+                  onChange={updateFinancialData}
+                  onGoalChange={updateGoal}
+                  onAddGoal={addGoal}
+                  onRemoveGoal={removeGoal}
+                  onExpenseChange={updateExpense}
+                  onAddExpense={addExpense}
+                  onRemoveExpense={removeExpense}
+                  onTaxChange={updateTax}
+                  onBonusChange={updateAnnualBonus}
+                  onAddBonus={addAnnualBonus}
+                  onRemoveBonus={removeAnnualBonus}
+                  onSubmit={submit}
+                  isLoading={isLoading}
+                />
+              </div>
+              <aside className="finance-overlay__scenario-block">
+                <ScenarioControls scenario={scenario} onChange={updateScenario} />
+                <CertifiedPresetsPanel
+                  presets={certifiedPresets}
+                  isLoading={presetsLoading}
+                  error={presetsError}
+                  onApply={handleApplyPreset}
+                  onRefresh={refreshCertifiedPresets}
+                />
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

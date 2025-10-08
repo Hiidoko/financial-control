@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
 
 import { formatCurrency, formatPercent } from '@/utils/formatters.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 
 const VOLATILITY_INTERPRETATION = (value) => {
   if (!Number.isFinite(value)) return '—'
@@ -44,16 +46,32 @@ export function ProInsightsPanel ({
     )
   }
 
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('pro-insights', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
   return (
     <section className="panel panel-pro-insights">
-      <header className="panel-header">
+      <header className="panel-header panel-header--with-toggle">
         <div>
           <h3 className="panel-title">Suite Pro · Inteligência certificada</h3>
-          <p className="panel-subtitle">Combine benchmarks ANBIMA, colaboração e dados Open Finance para planos acionáveis em minutos.</p>
+          {!collapsed && <p className="panel-subtitle">Combine benchmarks ANBIMA, colaboração e dados Open Finance para planos acionáveis em minutos.</p>}
         </div>
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher suite Pro"
+          labelExpand="Expandir suite Pro"
+          size="sm"
+          controls={contentId}
+        />
       </header>
 
-      <div className="pro-insights__grid">
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade pro-insights__grid"
+          aria-hidden={collapsed}
+        >
         <article className="pro-insight-card">
           <header>
             <h4>Relatório comparativo ANBIMA</h4>
@@ -62,11 +80,13 @@ export function ProInsightsPanel ({
 
           <button
             type="button"
-            className="button-primary"
+            className={`button-primary pro-action-btn${comparativeLoading ? ' is-loading' : ''}`}
             onClick={onRunComparative}
             disabled={!hasSummary || comparativeLoading}
           >
-            {comparativeLoading ? 'Gerando...' : 'Gerar relatório certificado'}
+            {comparativeLoading
+              ? <><span className="loader-dots" aria-hidden="true"><span /><span /><span /></span> Gerando...</>
+              : 'Gerar relatório certificado'}
           </button>
 
           {comparativeError && <p className="pro-error">{comparativeError}</p>}
@@ -211,11 +231,13 @@ export function ProInsightsPanel ({
 
           <button
             type="button"
-            className="button-primary"
+            className={`button-primary pro-action-btn${openFinanceLoading ? ' is-loading' : ''}`}
             onClick={onFetchOpenFinance}
             disabled={openFinanceLoading}
           >
-            {openFinanceLoading ? 'Sincronizando...' : 'Atualizar snapshot'}
+            {openFinanceLoading
+              ? <><span className="loader-dots" aria-hidden="true"><span /><span /><span /></span> Sincronizando...</>
+              : (openFinanceSnapshot ? 'Atualizar snapshot' : 'Gerar snapshot')}
           </button>
 
           {openFinanceError && <p className="pro-error">{openFinanceError}</p>}
@@ -243,7 +265,8 @@ export function ProInsightsPanel ({
             </div>
           )}
         </article>
-      </div>
+        </div>
+      )}
     </section>
   )
 }

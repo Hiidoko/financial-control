@@ -1,56 +1,92 @@
-# Financial Future Simulator
+<h1 align="center">Financial Control • Planejamento financeiro inteligente</h1>
 
-> 🚧 **Projeto em construção ativo.** As features, APIs e políticas de segurança ainda estão em evolução — avalie com cuidado antes de utilizar em produção.
->
-> ⚠️ **Estado atual:** estamos iterando e estudando novas abordagens. É esperado encontrar falhas visuais provisórias, fluxos incompletos e ajustes funcionais pendentes enquanto validamos hipóteses.
+> 🌐 Leia em: **Português (PT-BR)** · [English](./README_EN.md)
 
-Aplicação full-stack JavaScript que combina planejamento financeiro avançado, recomendações assistidas por IA e experiências colaborativas. A proposta é oferecer uma jornada completa: da prospecção (landing/login) à simulação de cenários, passando por exportações seguras e insights Pro. O foco está em UX polida, acessibilidade desde o início e arquitetura modular pronta para escalar.
+> Simulador completo de evolução patrimonial com metas, cenários, recomendações (IA leve), presets certificados e recursos Pro colaborativos.
+
+**Live demo:** https://financial-control-d0ix.onrender.com  
+**Prints:**  
+![Dashboard](./img/print_1.jpg)  
+![Suite Pro](./img/print_2.jpg)
+
+> Projeto em evolução contínua (estágio avançado). Código preparado para estudo, experimentação e futura hardening antes de um ambiente regulatório real.
+
+---
 
 ## 🌐 Idiomas
 
 - **Português (Brasil)** *(documentação principal)*
 - English *(coming soon)*
 
-## 🔗 Demo & Visuals
+## 🔍 Visão Geral do Produto
 
-- **Status:** desenvolvimento local (`npm run dev`), publicação pública em planejamento
-- **Preview recomendada:** a nova tela de onboarding/login estilo landing page, com highlights, métricas e seleção de planos
+O usuário pode:
+1. Cadastrar perfil financeiro (renda, gastos, patrimônio, impostos, metas, bônus, cenários).
+2. Gerar simulações multi‐cenário (baseline, otimista, pessimista) + testes de estresse.
+3. Receber recomendações inteligentes (quick wins, cortes, movimentos estratégicos, riscos, persona).
+4. Adotar metas sugeridas automaticamente (priorizadas por categoria e horizonte).
+5. Exportar dados (PDF / CSV / Excel / ICS) e preparar relatórios (WIP evolução PDF único consolidado).
+6. Acessar Suite Pro: relatório comparativo ANBIMA, metas colaborativas e snapshot Open Finance (mock/síntese).
+7. Colapsar/expandir todos os painéis com estado persistente por dispositivo.
+8. Ajustar tema (dark/light) e trabalhar em modo foco sem distrações.
 
-## 🚀 Stack Principal
+Arquitetura focada em modularidade: serviços de projeção, recomendação, metas recomendadas e presets certificados isolados.
 
-- **Frontend:** Vite + React 18, Context API, TensorFlow.js (recomendação comportamental), Chart.js, html2canvas + jsPDF, XLSX
-- **Backend:** Node.js 20+, Express 4, Mongoose 8, JWT, bcryptjs, Zod para validação declarativa
-- **Infra & DX:** Concurrently para orquestração full-stack, nodemon, dotenv, ES Modules first
-- **Estilo & UI:** Design system próprio com CSS variables, glassmorphism e gradientes inspirados no ecossistema Tailwind
-- **Qualidade:** ESLint (Standard), Vitest (servidor – provisionado), scripts de build integrados
+## 🚀 Stack Técnica
 
-## 🌟 Visão Geral
+| Camada | Tecnologias |
+| ------ | ----------- |
+| Frontend | React 18 + Vite, Context API, Hooks custom, Chart.js, html2canvas + jsPDF, SheetJS (XLSX) |
+| Recomendação | TensorFlow.js (modelo leve + regras híbridas) |
+| Exportações | PDF (canvas), CSV/Excel, ICS calendar, (futuro: pacote PDF consolidado) |
+| Backend | Node.js 20+, Express 4, Mongoose 8, JWT, bcryptjs, Zod (validators) |
+| Segurança | JWT, hashing de senha, validação, estrutura para rate limiting e CORS configurável |
+| Build & DX | Concurrently, nodemon, dotenv, ESM, scripts de fallback de build frontend no servidor |
+| Testes | Vitest (backend), placeholder para expansão de cenários e serviços |
 
-| Cenário | Como entregamos |
-| ------- | --------------- |
-| **Planejamento guiado** | Wizard de simulação com múltiplas metas, sliders de eventos extremos e painéis de KPIs dinâmicos. |
-| **Recomendações inteligentes** | Modelo TensorFlow.js classifica hábitos (poupar, aportar, otimizar) e gera racional customizado. |
-| **Colaboração & Pro** | Metas compartilhadas, presets certificados ANBIMA, relatórios comparativos e snapshot Open Finance. |
-| **Compartilhamento seguro** | Exportação para PDF, CSV, Excel e link criptografado (AES-GCM + PBKDF2) protegido por senha. |
-| **Autenticação moderna** | Landing/login responsivo com storytelling, métricas e seleção de planos Basic/Pro. |
+Extras notáveis: persistência de estado de colapso por painel, lazy unmount para performance, animações suaves controladas por hooks.
 
-## ✨ Destaques da Experiência
+## ✨ Principais Funcionalidades
 
-- **Dashboard vivo:** patrimônio projetado, comparativo baseline/otimista/pessimista, testes de estresse e histórico de simulações.
-- **Gestão de metas:** priorização, adoção de recomendações automáticas, timeline completa e integrações de calendário (ICS + Google Calendar).
-- **Export & share:** PDF estilizado, planilhas Excel com múltiplas abas (timeline, metas, cenários) e timeline CSV.
-- **Suite Pro:** relatório comparativo ANBIMA, planejamento colaborativo com divisão sugerida de aportes e snapshot Open Finance.
-- **Focus & Theme:** toggle de dark/light, modo foco sem distrações e tour interativo com Joyride.
+- Simulação financeira multi-cenário com timeline e eventos (bônus, perda de renda, despesas inesperadas).
+- Gestão de metas (prioridade, horizonte, acompanhamento de shortfall, projeção de atraso ou cumprimento antecipado).
+- Metas recomendadas automaticamente (análise de perfil + heurísticas de baseline).
+- Recomendações estruturadas: quick wins, cortes, movimentos estratégicos, riscos e persona sugerida.
+- Relatório comparativo ANBIMA (baseline vs otimista vs pessimista) – versão inicial.
+- Metas colaborativas (divisão de aportes por parceiro simulado).
+- Snapshot Open Finance (mock sintético com volatilidade e cobertura de liquidez calculadas).
+- Exportações: PDF (canvas), CSV/Excel (multi-aba), ICS (eventos de metas / marcos futuros).
+- Histórico de simulações com comparação lado a lado (selecionar até duas) e comentários.
+- Componentização colapsável universal (+/−) com persistência em localStorage e animação height.
+- Tema dark/light, modo foco e UI responsiva otimizada para mobile (incluindo iPhone SE).
+- Lazy render de painéis colapsados para ganho de performance.
 
-## 🧭 Arquitetura em Camadas
+Em progresso (iterativo): robustez de validações, melhoria de modelos de recomendação, export PDF consolidada e automação de testes.
 
-| Camada | Descrição |
-| ------ | --------- |
-| **Interface (client/src)** | React + Context para auth e tema, hooks customizados (`useFinancialSimulation`) e componentes modulares (widget board, timeline, export menu). |
-| **Serviços (client/src/services)** | Wrapper `fetch` tipado com fallback de mensagens, suporte a credenciais e token JWT. |
-| **ML & utilitários** | TensorFlow carregado sob demanda, datasets sintéticos e pipeline de explicabilidade por regra. Exportadores encapsulam PDF/CSV/XLSX/ICS e criptografia Web Crypto. |
-| **API (server/src)** | Express com middlewares globais, rotas `/api/*`, autenticação JWT, orquestração de simulações e endpoints Pro/colaborativos.
-| **Persistência** | Mongoose modela usuários, presets e históricos (configuração do `MONGODB_URI` requerida).
+## 🧩 Arquitetura & Fluxo de Simulação
+
+1. Usuário insere perfil base + metas + impostos + bônus + composição de gastos.
+2. Serviço de projeção calcula timeline mês a mês e avalia cumprimento de metas (on-time / atrasos / shortfall residual).
+3. Camada de heurísticas gera recomendações e persona.
+4. Modelo leve de recomendação complementa com sinais comportamentais (clusterização simplificada).
+5. Resultados são exibidos em painéis colapsáveis + timeline + métricas e ficam disponíveis para exportação.
+
+### Componentes Chave
+| Componente | Papel |
+| ---------- | ---- |
+| `ProjectionChart` | Linha de evolução patrimonial com múltiplos cenários |
+| `FinancialTimeline` | Eventos marcados: metas, choques, marcos projetados |
+| `RecommendationPanel` | Quick wins, cortes, movimentos, riscos, persona |
+| `ProInsightsPanel` | Relatório comparativo, colaborativo e Open Finance |
+| `SimulationHistory` | Histórico interativo com comentários e seleção comparativa |
+| `FinanceForm` (overlay) | Captura de perfil completo + metas + gastos + bônus |
+| `CertifiedPresetsPanel` | Presets certificados (benchmarks) |
+| `RecommendedGoalsPanel` | Metas sugeridas dinamicamente |
+| `ScenarioControls` | Sliders de choques e ajustes de cenário |
+| `StressTestList` | Impacto de choques sobre metas prioritárias |
+| `ScenarioSummary` | KPIs dos cenários lado a lado |
+
+## 🗂 Estrutura de Pastas (Resumo)
 
 ### UI & Identidade Visual
 
@@ -71,29 +107,28 @@ Aplicação full-stack JavaScript que combina planejamento financeiro avançado,
 - Tokens de auth persistidos em localStorage com provider central.
 - CORS, compressão e JWT prontos para endurecimento adicional.
 
-## � Estrutura de Pastas
-
 ```
 client/
-	src/
-		components/     # Painéis, widgets, landing/login, formulários
-		context/         # Auth e tema
-		hooks/           # useFinancialSimulation, etc.
-		ml/              # Modelo TensorFlow.js
-		services/        # camadas de API (fetch)
-		utils/           # exportadores, formatadores, criptografia
-	styles/global.css  # design system e temas
+  src/
+    components/     # Painéis e widgets principais
+    context/        # Auth / Theme providers
+    hooks/          # useFinancialSimulation e colapso de painéis
+    ml/             # Modelo de recomendação (TensorFlow.js)
+    services/       # API client
+    utils/          # Export, format, criptografia
+    styles/         # global.css (design system / tokens)
 server/
-	src/
-		index.js         # bootstrap Express + Mongo
-		routes/          # rotas públicas e Pro
-		controllers/     # regras de simulação e auth
-		models/          # mongoose schemas
-		middlewares/     # auth, erros, logging
-	package.json       # scripts de dev/test/lint
+  src/
+    routes/         # auth, presets, pro, simulation
+    models/         # User, Preset
+    services/       # projection, recommendation, goals, proFeature
+    middleware/     # auth, cache
+    utils/          # validators, demoUser, cache helpers
+  seed/             # init scripts
+img/                # print_1.jpg, print_2.jpg
 ```
 
-## � Começando Localmente
+## 🛠️ Como Rodar Localmente
 
 Pré-requisito: [Node.js 18 ou superior](https://nodejs.org/)
 
@@ -115,7 +150,7 @@ npm run dev
 # API:      http://localhost:4000 (fallback automático para 4001)
 ```
 
-### Build de Produção
+### Build de Produção / Deploy
 
 ```bash
 npm run build --prefix client
@@ -142,7 +177,7 @@ Se ainda obtiver `Cannot GET /`:
 
 Resposta de fallback quando o build está ausente agora é: `API online. Build do frontend ausente. Rode: npm run build` — indicando claramente o problema.
 
-## 🔧 Variáveis de Ambiente
+## 🔧 Variáveis de Ambiente (Principais)
 
 - `MONGODB_URI` – string de conexão (MongoDB Atlas/local). Sem ela, os recursos persistentes ficam indisponíveis.
 - `JWT_SECRET` – chave para geração/validação de tokens.
@@ -150,7 +185,7 @@ Resposta de fallback quando o build está ausente agora é: `API online. Build d
 
 Consulte `.env.example` e `server/.env.example` para mais detalhes.
 
-## 🧪 Scripts Importantes
+## 📜 Scripts
 
 | Contexto | Script | Descrição |
 | -------- | ------ | --------- |
@@ -163,7 +198,7 @@ Consulte `.env.example` e `server/.env.example` para mais detalhes.
 |          | `npm run lint` | ESLint (Standard). |
 |          | `npm test` | Vitest (placeholder preparado). |
 
-## 📡 Endpoints Essenciais
+## 📡 Endpoints Essenciais (Resumo)
 
 | Método | Rota | Descrição |
 | ------ | ---- | --------- |
@@ -195,7 +230,7 @@ Payload típico de simulação (resumo):
 }
 ```
 
-## 🧭 Roadmap & Backlog
+## 🛣️ Roadmap (Resumo)
 
 - [ ] Deploy público (Render/Vercel + Atlas) com CI/CD.
 - [ ] Autenticação multifator e recuperação segura.
@@ -211,7 +246,7 @@ Payload típico de simulação (resumo):
 - Landing responsiva com contraste testado e microinterações discretas.
 - Backlog inclui auditorias contínuas (axe-core/NVDA) e preferências de redução de movimento.
 
-## ⚠️ Aviso Importante
+## ⚠️ Aviso
 
 Projeto educacional/portfolio. Não armazene dados sensíveis em produção sem reforçar autenticação, rate limiting, observabilidade, backups e governança de acesso.
 
@@ -220,6 +255,8 @@ Projeto educacional/portfolio. Não armazene dados sensíveis em produção sem 
 Distribuído sob licença **MIT**. Consulte `LICENSE` para detalhes.
 
 ## 🙌 Créditos
+
+<p align="center"><sub>Financial Control — metas, cenários e decisões financeiras mais claras.</sub></p>
 
 Criado por **Caio Marques (Hiidoko)**  
 [LinkedIn](https://linkedin.com/in/hiidoko)

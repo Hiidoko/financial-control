@@ -226,32 +226,54 @@ export function AuthScreen () {
         </section>
 
         <aside className="auth-pane" aria-label={mode === 'login' ? 'Formulário de acesso' : 'Formulário de criação de conta'}>
-          <div className="auth-pane__inner">
-            <header className="auth-pane__header">
-              <span className="auth-eyebrow">{mode === 'login' ? 'Acesso' : 'Comece agora'}</span>
-              <h2>{mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta gratuita'}</h2>
+          <div className="auth-pane__inner auth-pane__inner--revamp">
+            <div className="auth-tabs" role="tablist" aria-label="Alternar modo de autenticação">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === 'login'}
+                className={mode === 'login' ? 'is-active' : ''}
+                onClick={() => { if (mode !== 'login') setMode('login') }}
+              >Entrar</button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === 'register'}
+                className={mode === 'register' ? 'is-active' : ''}
+                onClick={() => { if (mode !== 'register') setMode('register') }}
+              >Criar conta</button>
+              <div className="auth-tabs__glow" aria-hidden="true" />
+            </div>
+
+            <header className="auth-pane__header auth-pane__header--center">
+              <h2 className="auth-title">{mode === 'login' ? 'Bem-vindo de volta' : 'Comece sua evolução financeira'}</h2>
               <p className="auth-subtext">
                 {mode === 'login'
-                  ? 'Entre e continue suas simulações, comparativos e exportações.'
-                  : 'Menos de 2 minutos para liberar simulações avançadas, relatórios e recomendações de IA.'}
+                  ? 'Acesse seu painel e continue de onde parou.'
+                  : 'Crie uma conta gratuita e libere simulações avançadas, metas inteligentes e recomendações de IA.'}
               </p>
             </header>
 
-            <form className="auth-form" onSubmit={handleSubmit} noValidate>
-              <div className="social-login" aria-hidden="false">
-                <button type="button" className="social-btn social-btn--google" onClick={() => alert('Integração Google em desenvolvimento')}>
-                  <span className="social-icon">G</span>
-                  <span>Google</span>
-                </button>
-                <button type="button" className="social-btn social-btn--microsoft" onClick={() => alert('Integração Microsoft em desenvolvimento')}>
-                  <span className="social-icon">MS</span>
-                  <span>Microsoft</span>
-                </button>
-              </div>
-              <div className="divider"><span>Ou continue com email</span></div>
+            <div className="social-buttons" aria-label="Opções sociais (em breve)">
+              <button type="button" className="social-btn revamp" onClick={() => alert('Integração Google em desenvolvimento')}>
+                <span className="social-icon g" aria-hidden="true">G</span>
+                <span>Google</span>
+              </button>
+              <button type="button" className="social-btn revamp" onClick={() => alert('Integração Microsoft em desenvolvimento')}>
+                <span className="social-icon ms" aria-hidden="true">MS</span>
+                <span>Microsoft</span>
+              </button>
+              <button type="button" className="social-btn revamp demo" onClick={handleDemoLogin}>
+                <span className="social-icon demo" aria-hidden="true">⚡</span>
+                <span>Entrar como Demo Pro</span>
+              </button>
+            </div>
+            <div className="divider divider--sub"><span>Ou e-mail {mode === 'login' ? 'para acessar' : 'para criar sua conta'}</span></div>
+
+            <form className="auth-form auth-form--revamp" onSubmit={handleSubmit} noValidate>
               {mode === 'register' && (
                 <>
-                  <label className="input-field">
+                  <label className="input-field span-2">
                     <span className="input-label">Nome completo</span>
                     <input
                       type="text"
@@ -262,54 +284,49 @@ export function AuthScreen () {
                       required
                     />
                   </label>
-                  <div className="form-grid">
-                    <label className="input-field">
-                      <span className="input-label">Data de nascimento</span>
-                      <input
-                        type="date"
-                        className="input-control"
-                        value={formState.birthDate}
-                        max={format(new Date(), 'yyyy-MM-dd')}
-                        onChange={(e) => handleChange('birthDate', e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className="input-field">
-                      <span className="input-label">Pessoas na casa</span>
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        className="input-control"
-                        value={formState.householdMembers}
-                        onChange={(e) => handleChange('householdMembers', e.target.value)}
-                      />
-                    </label>
-                  </div>
-                  <div className="plan-toggle" role="radiogroup" aria-label="Seleção de plano">
+                  <label className="input-field">
+                    <span className="input-label">Nascimento</span>
+                    <input
+                      type="date"
+                      className="input-control"
+                      value={formState.birthDate}
+                      max={format(new Date(), 'yyyy-MM-dd')}
+                      onChange={(e) => handleChange('birthDate', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label className="input-field">
+                    <span className="input-label">Pessoas no lar</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      className="input-control"
+                      value={formState.householdMembers}
+                      onChange={(e) => handleChange('householdMembers', e.target.value)}
+                    />
+                  </label>
+                  <div className="plan-select span-2" role="radiogroup" aria-label="Selecione o plano">
                     <button
                       type="button"
                       role="radio"
                       aria-checked={formState.role === 'basic'}
-                      className={`plan-chip ${formState.role === 'basic' ? 'is-active' : ''}`}
+                      className={`plan-pill ${formState.role === 'basic' ? 'is-active' : ''}`}
                       onClick={() => handleChange('role', 'basic')}
-                    >
-                      Essencial
-                    </button>
+                    >Essencial</button>
                     <button
                       type="button"
                       role="radio"
                       aria-checked={formState.role === 'pro'}
-                      className={`plan-chip ${formState.role === 'pro' ? 'is-active' : ''}`}
+                      className={`plan-pill ${formState.role === 'pro' ? 'is-active' : ''}`}
                       onClick={() => handleChange('role', 'pro')}
-                    >
-                      Pro
-                    </button>
+                    >Pro</button>
+                    <small className="plan-hint" aria-live="polite">{formState.role === 'pro' ? 'Inclui comparativos, IA avançada e exportações premium.' : 'Você pode evoluir para Pro depois.'}</small>
                   </div>
                 </>
               )}
-              <div className="email-field-wrapper">
-              <label className="input-field">
+
+              <label className="input-field span-2">
                 <span className="input-label">Email</span>
                 <input
                   type="email"
@@ -319,12 +336,10 @@ export function AuthScreen () {
                   placeholder="voce@empresa.com"
                   required
                 />
+                {mode === 'register' && <EmailStatus status={emailStatus} />}
               </label>
-              {mode === 'register' && (
-                <EmailStatus status={emailStatus} />
-              )}
-              </div>
-              <label className="input-field">
+
+              <label className="input-field span-2">
                 <span className="input-label">Senha</span>
                 <div className="password-wrapper">
                   <input
@@ -333,7 +348,7 @@ export function AuthScreen () {
                     value={formState.password}
                     onChange={(e) => handleChange('password', e.target.value)}
                     minLength={8}
-                    placeholder="Mínimo de 8 caracteres"
+                    placeholder="Mínimo 8 caracteres"
                     aria-describedby={`${formId}-pwd-strength`}
                     required
                   />
@@ -363,23 +378,22 @@ export function AuthScreen () {
               </label>
 
               {(submitError || error) && (
-                <div className="form-error" role="alert">{submitError || error}</div>
+                <div className="form-error span-2" role="alert">{submitError || error}</div>
               )}
 
-              <button type="submit" className="button-primary" disabled={isLoading}>
+              <button type="submit" className="button-primary auth-submit span-2" disabled={isLoading}>
                 {isLoading ? 'Processando...' : mode === 'login' ? 'Entrar agora' : 'Criar minha conta'}
               </button>
             </form>
 
-            <div className="auth-switch">
-              <span>{mode === 'login' ? 'Ainda não tem conta?' : 'Já possui acesso?'}</span>
-              <button type="button" onClick={switchMode} className="switch-action">
-                {mode === 'login' ? 'Criar conta gratuita' : 'Entrar com email e senha'}
+            <div className="auth-extra">
+              <button type="button" onClick={switchMode} className="link-inline">
+                {mode === 'login' ? 'Criar conta gratuita' : 'Já tenho conta – entrar'}
               </button>
+              <span className="sep">•</span>
+              <button type="button" className="link-inline" onClick={handleDemoLogin}>Usar conta demo Pro</button>
             </div>
-            <div className="auth-footnote">Criptografia AES-256, tokens rotativos e expansão futura para MFA.</div>
-            <div className="divider"><span>Ou</span></div>
-            <button type="button" className="button-ghost alt-demo" onClick={handleDemoLogin}>Explorar versão Pro em modo demo</button>
+            <div className="auth-footnote">Criptografia AES‑256 • Tokens rotativos • Roadmap: MFA & auditoria</div>
           </div>
         </aside>
       </main>

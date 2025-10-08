@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
 import { Line } from 'react-chartjs-2'
 import { ensureChartRegistration } from '@/utils/chartSetup.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { useAnimatedCollapse, usePanelCollapse } from '@/hooks/usePanelCollapse.js'
 
 ensureChartRegistration()
 
@@ -88,6 +90,8 @@ export function FinancialTimeline ({ baseline, input, summary, tourId }) {
   if (!baseline) return null
 
   const events = buildEvents(baseline, input, summary)
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('financial-timeline', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
 
   const data = {
     datasets: [
@@ -162,23 +166,39 @@ export function FinancialTimeline ({ baseline, input, summary, tourId }) {
 
   return (
     <section className="timeline-card focus-optional" data-tour={tourId}>
-      <header className="panel-header">
+      <header className="panel-header panel-header--with-toggle">
         <h2 className="panel-title">Linha do tempo financeira</h2>
-        <p className="panel-subtitle">Eventos críticos e hitos durante a projeção base.</p>
+        {!collapsed && <p className="panel-subtitle">Eventos críticos e hitos durante a projeção base.</p>}
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher linha do tempo"
+          labelExpand="Expandir linha do tempo"
+          size="sm"
+          controls={contentId}
+        />
       </header>
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade"
+          aria-hidden={collapsed}
+        >
+          <div className="timeline-legend">
+            {events.map((event) => (
+              <span key={event.id}>
+                <i style={{ background: event.color }} />
+                {event.label}
+              </span>
+            ))}
+          </div>
 
-      <div className="timeline-legend">
-        {events.map((event) => (
-          <span key={event.id}>
-            <i style={{ background: event.color }} />
-            {event.label}
-          </span>
-        ))}
-      </div>
-
-      <div className="timeline-canvas">
-        <Line data={data} options={options} />
-      </div>
+          <div className="timeline-canvas">
+            <Line data={data} options={options} />
+          </div>
+        </div>
+      )}
     </section>
   )
 }

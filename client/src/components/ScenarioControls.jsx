@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types'
 import { formatCurrency } from '../utils/formatters.js'
+import { CollapseToggle } from './CollapseToggle.jsx'
+import { usePanelCollapse, useAnimatedCollapse } from '@/hooks/usePanelCollapse.js'
 
 const sliderConfig = [
   {
@@ -59,21 +61,37 @@ const sliderConfig = [
 ]
 
 export function ScenarioControls ({ scenario, onChange, tourId }) {
+  const { collapsed, toggle, contentId, shouldRender, onAnimationEnd } = usePanelCollapse('scenario-controls', false)
+  const contentRef = useAnimatedCollapse(collapsed, onAnimationEnd)
   return (
     <section className="panel" data-tour={tourId}>
-      <header className="panel-header flex-between">
+      <header className="panel-header panel-header--with-toggle">
         <div>
           <h2 className="panel-title">Cenários inteligentes</h2>
-          <p className="panel-subtitle">Ajuste os controles para simular choques de renda, gastos e oportunidades.</p>
+          {!collapsed && <p className="panel-subtitle">Ajuste os controles para simular choques de renda, gastos e oportunidades.</p>}
         </div>
+        <CollapseToggle
+          collapsed={collapsed}
+          onToggle={toggle}
+          labelCollapse="Recolher cenários"
+          labelExpand="Expandir cenários"
+          size="sm"
+          controls={contentId}
+        />
       </header>
 
-      <div className="stack-space">
+      {shouldRender && (
+        <div
+          ref={contentRef}
+          id={contentId}
+          className="collapsible-content-wrapper collapsible-fade stack-space"
+          aria-hidden={collapsed}
+        >
         {sliderConfig.map((slider) => {
           const value = scenario[slider.key]
-          const formattedValue = slider.formatValue
-            ? slider.formatValue(value)
-            : `${value}${slider.unit ? slider.unit : ''}`
+            const formattedValue = slider.formatValue
+              ? slider.formatValue(value)
+              : `${value}${slider.unit ? slider.unit : ''}`
 
           return (
             <div key={slider.key} data-tour={slider.key === 'incomeGrowthRate' ? 'scenario-slider' : undefined}>
@@ -96,7 +114,8 @@ export function ScenarioControls ({ scenario, onChange, tourId }) {
             </div>
           )
         })}
-      </div>
+        </div>
+      )}
     </section>
   )
 }
