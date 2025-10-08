@@ -4,6 +4,9 @@ import cors from 'cors'
 import compression from 'compression'
 import mongoose from 'mongoose'
 import { createServer } from 'node:http'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+import fs from 'node:fs'
 
 import simulationRouter from './routes/simulation.js'
 import authRouter from './routes/auth.js'
@@ -14,6 +17,11 @@ import { seedPresets } from './seed/init.js'
 const app = express()
 const DEFAULT_PORT = Number.parseInt(process.env.PORT ?? '4000', 10)
 const MAX_PORT_ATTEMPTS = 5
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const clientDistPath = path.resolve(__dirname, '../../client/dist')
+const clientIndexPath = path.join(clientDistPath, 'index.html')
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
@@ -30,6 +38,17 @@ app.use('/api/auth', authRouter)
 app.use('/api/presets', presetsRouter)
 app.use('/api/pro', proRouter)
 app.use('/api/simulations', simulationRouter)
+
+if (process.env.NODE_ENV === 'production' && fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath))
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next()
+    res.sendFile(clientIndexPath)
+  })
+} else if (process.env.NODE_ENV === 'production') {
+  console.warn('Build do client não encontrado. Verifique se `npm run build --prefix client` foi executado.')
+}
 
 app.use((err, req, res, next) => {
   console.error('[UnhandledError]', err)
