@@ -19,7 +19,6 @@
     "chart.js": "^4.4.4",
     "clsx": "^2.1.0",
     "date-fns": "^4.1.0",
-    "financial-future-simulator": "file:..",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
     "react": "^18.3.1",
