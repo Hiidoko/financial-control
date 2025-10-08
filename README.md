@@ -6,8 +6,8 @@
 
 **Live demo:** https://financial-control-d0ix.onrender.com  
 **Prints:**  
-![Dashboard](./img/print_1.jpg)  
-![Suite Pro](./img/print_2.jpg)
+![Dashboard](./img/print_1.png)  
+![Suite Pro](./img/print_2.png)
 
 > Projeto em evolução contínua (estágio avançado). Código preparado para estudo, experimentação e futura hardening antes de um ambiente regulatório real.
 
