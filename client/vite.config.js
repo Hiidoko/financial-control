@@ -13,6 +13,11 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
+  build: {
+    outDir: resolve(__dirname, '../server/public'),
+    emptyOutDir: true,
+    sourcemap: true
+  },
   server: {
     port: 5173,
     proxy: {

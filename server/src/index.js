@@ -20,8 +20,27 @@ const MAX_PORT_ATTEMPTS = 5
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const clientDistPath = path.resolve(__dirname, '../../client/dist')
-const clientIndexPath = path.join(clientDistPath, 'index.html')
+// Novo: servir build do client gerado em server/public (configurado no Vite)
+// Permite que o deploy funcione mesmo quando apenas a pasta "server" é publicada.
+// Ordem de precedência para localizar build (permite migração suave):
+// 1. Variável de ambiente CLIENT_DIST_PATH
+// 2. server/public (novo padrão)
+// 3. ../../client/dist (padrão antigo quando repo raiz é deployado)
+const candidatePaths = [
+  process.env.CLIENT_DIST_PATH,
+  path.resolve(__dirname, '../public'),
+  path.resolve(__dirname, '../../client/dist')
+].filter(Boolean)
+
+let clientDistPath = null
+for (const p of candidatePaths) {
+  if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
+    clientDistPath = p
+    break
+  }
+}
+
+const clientIndexPath = clientDistPath ? path.join(clientDistPath, 'index.html') : null
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
@@ -39,16 +58,25 @@ app.use('/api/presets', presetsRouter)
 app.use('/api/pro', proRouter)
 app.use('/api/simulations', simulationRouter)
 
-if (fs.existsSync(clientDistPath)) {
+if (clientDistPath && clientIndexPath && fs.existsSync(clientIndexPath)) {
+  console.log('[Static] Servindo client de:', clientDistPath)
   app.use(express.static(clientDistPath))
-
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) return next()
-    res.sendFile(clientIndexPath)
-  })
 } else {
-  console.warn('Build do client não encontrado. Verifique se `npm run build --prefix client` foi executado.')
+  console.warn('[Static] Build do client não encontrado. Execute o build: `npm run build` na raiz ou defina CLIENT_DIST_PATH.')
 }
+
+// Fallback SPA e root. Mantido fora do bloco acima para sempre responder a '/'
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next()
+  if (clientIndexPath && fs.existsSync(clientIndexPath)) {
+    return res.sendFile(clientIndexPath)
+  }
+  // Resposta informativa quando não há build
+  if (req.path === '/' || req.path === '/index.html') {
+    return res.status(200).send('API online. Build do frontend ausente. Rode: npm run build')
+  }
+  return res.status(404).send('Recurso não encontrado')
+})
 
 app.use((err, req, res, next) => {
   console.error('[UnhandledError]', err)

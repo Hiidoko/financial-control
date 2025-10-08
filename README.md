@@ -121,7 +121,26 @@ npm run dev
 npm run build --prefix client
 ```
 
-Os artefatos são emitidos em `client/dist`. Utilize um servidor estático (Netlify, Vercel, Nginx) e a API Node hospedada no provedor de preferência.
+Os artefatos agora (padrão atualizado) são emitidos em `server/public` para facilitar deploy integrado (um único serviço Node servindo API + frontend).
+
+Se você já tinha um fluxo antigo usando `client/dist`, ele ainda é suportado: o servidor procura em `CLIENT_DIST_PATH`, depois `server/public`, depois `client/dist`.
+
+### Deploy (evitando "Cannot GET /")
+
+1. Gere o build: `npm run build`
+2. Inicie o servidor em modo produção: `npm run serve` (ou `npm run build:and:start` para ambos)
+3. Garanta que a plataforma (Render, Railway, Fly, etc.) execute o comando `npm run build:and:start`
+4. Se usar build separado (CI):
+	- Passo de build: `npm run build`
+	- Passo de start: `npm run serve`
+
+Se ainda obtiver `Cannot GET /`:
+ - Verifique logs: deve aparecer `[Static] Servindo client de: ...`
+ - Confirme existência de `index.html` em um dos diretórios esperados.
+ - Defina explicitamente `CLIENT_DIST_PATH` apontando para a pasta do bundle se o layout for personalizado.
+ - Confirme que nenhuma regra de rewrite da plataforma está interceptando `/` antes do Node.
+
+Resposta de fallback quando o build está ausente agora é: `API online. Build do frontend ausente. Rode: npm run build` — indicando claramente o problema.
 
 ## 🔧 Variáveis de Ambiente
 
