@@ -1,29 +1,36 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useId, useRef } from 'react'
 import { format } from 'date-fns'
-
 import { useAuth } from '@/context/AuthContext.jsx'
 
 const DEFAULT_BIRTHDATE = '1995-01-01'
 
 const HERO_FEATURES = [
   {
-    title: 'Metas inteligentes',
-    description: 'Algoritmos certificados sugerem aportes e prazos realistas com base no seu perfil.'
+    icon: '📊',
+    title: 'Simulações avançadas',
+    description: 'Monte cenários realistas em minutos com baseline, otimista e estresse side‑by‑side.'
   },
   {
-    title: 'Comparativos ANBIMA',
-    description: 'Visualize cenários base, otimista e conservador com benchmark de mercado.'
+    icon: '🤖',
+    title: 'Recomendações de IA',
+    description: 'Insights acionáveis priorizados por impacto e explicados em linguagem simples.'
   },
   {
-    title: 'Open Finance integrado',
-    description: 'Sincronize carteiras e mantenha seu fluxo de caixa atualizado automaticamente.'
+    icon: '🔒',
+    title: 'Segurança Enterprise',
+    description: 'Criptografia AES‑256, tokens rotativos e preparação para MFA e auditoria.'
+  },
+  {
+    icon: '⚡',
+    title: 'Exportação poderosa',
+    description: 'PDF temático, Excel multi-aba, CSV e compartilhamento criptografado com expiração.'
   }
 ]
 
 const HERO_METRICS = [
-  { label: 'Planos simulados', value: '32 mil+' },
-  { label: 'Metas atingidas', value: '87%' },
-  { label: 'Tempo economizado', value: '12h / mês' }
+  { label: 'Planos simulados', value: '32k+' },
+  { label: 'Taxa de conclusão', value: '87%' },
+  { label: 'Tempo economizado', value: '12h/mês' }
 ]
 
 const DEMO_CREDENTIALS = {
@@ -57,12 +64,29 @@ export function AuthScreen () {
   })
   const [submitError, setSubmitError] = useState(null)
   const [showProModal, setShowProModal] = useState(false)
+  const [emailStatus, setEmailStatus] = useState('idle') // idle|checking|exists|available|invalid
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: 'Fraca' })
+  const emailCheckTimer = useRef(null)
+  const formId = useId()
 
   const handleChange = (field, value) => {
     setFormState((prev) => ({
       ...prev,
       [field]: value
     }))
+
+    if (field === 'email' && mode === 'register') {
+      if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current)
+      setEmailStatus('idle')
+      emailCheckTimer.current = setTimeout(() => {
+        validateEmail(value)
+      }, 450)
+    }
+
+    if (field === 'password') {
+      evaluatePassword(value)
+    }
   }
 
   const handleDemoLogin = async () => {
@@ -106,6 +130,7 @@ export function AuthScreen () {
   const switchMode = () => {
     setMode((prev) => (prev === 'login' ? 'register' : 'login'))
     setSubmitError(null)
+    setEmailStatus('idle')
   }
 
   useEffect(() => {
@@ -121,172 +146,240 @@ export function AuthScreen () {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showProModal])
 
-  return (
-    <div className="auth-landing">
-      <div className="auth-landing__gradient" aria-hidden="true" />
+  function evaluatePassword (pwd) {
+    if (!pwd) return setPasswordStrength({ score: 0, label: 'Fraca' })
+    let score = 0
+    const tests = [
+      /.{8,}/.test(pwd),
+      /[A-Z]/.test(pwd),
+      /[a-z]/.test(pwd),
+      /[0-9]/.test(pwd),
+      /[^A-Za-z0-9]/.test(pwd)
+    ]
+    score = tests.filter(Boolean).length
+    const labels = ['Fraca', 'Fraca', 'Média', 'Boa', 'Forte', 'Excelente']
+    setPasswordStrength({ score, label: labels[score] })
+  }
 
-      <header className="auth-landing__nav">
-        <div className="auth-brand">
-          <span className="auth-brand__mark">FF</span>
-          <div>
-            <strong>Financial Future Simulator</strong>
-            <span>Planejamento financeiro certificado</span>
+  async function validateEmail (email) {
+    if (!email || !/.+@.+\..+/.test(email)) {
+      setEmailStatus(email ? 'invalid' : 'idle')
+      return
+    }
+    try {
+      setEmailStatus('checking')
+      const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
+      const data = await res.json()
+      if (data.exists) setEmailStatus('exists')
+      else setEmailStatus('available')
+    } catch {
+      setEmailStatus('idle')
+    }
+  }
+
+  return (
+    <div className="auth-shell" aria-labelledby={`${formId}-title`}>
+      <div className="auth-shell__bg" aria-hidden="true" />
+      <header className="auth-header">
+        <div className="auth-header__brand" aria-label="Identidade do produto">
+          <span className="brand-mark" aria-hidden="true">FF</span>
+          <div className="brand-text">
+            <strong>Financial Future</strong>
+            <span>Planejamento inteligente & seguro</span>
           </div>
         </div>
-        <div className="auth-nav-actions">
-          <button
-            type="button"
-            className="auth-nav-badge auth-nav-badge--button"
-            onClick={() => setShowProModal(true)}
-          >
-            Nova versão Pro 2025
-          </button>
-          <button type="button" className="auth-nav-demo" onClick={handleDemoLogin}>
-            Testar demo agora
-          </button>
-        </div>
+        <nav className="auth-header__nav" aria-label="Ações primárias">
+          <button type="button" className="pill pill--outline" onClick={() => setShowProModal(true)}>Plano Pro 2025</button>
+          {/* Botão de demo removido por solicitação */}
+        </nav>
       </header>
 
-      <main className="auth-landing__grid">
-        <section className="auth-hero">
-          <span className="auth-hero__badge">Planejamento inteligente para a próxima década</span>
-          <h1>Transforme sua vida financeira com simulações orientadas por dados</h1>
-          <p>
-            Monte planos confiáveis em minutos, compare cenários certificados pela ANBIMA e receba recomendações
-            de IA para alcançar independência financeira com consistência.
-          </p>
-
-          <ul className="auth-hero__highlights">
-            {HERO_FEATURES.map((feature) => (
-              <li key={feature.title}>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </li>
-            ))}
-          </ul>
-
-          <div className="auth-hero__metrics">
-            {HERO_METRICS.map((metric) => (
-              <div key={metric.label}>
-                <strong>{metric.value}</strong>
-                <span>{metric.label}</span>
-              </div>
-            ))}
+      <main className="auth-layout" role="main">
+        <section className="hero-pane">
+          <div className="hero-pane__content">
+            <span className="hero-badge">Nova geração de planejamento financeiro</span>
+            <h1 id={`${formId}-title`}>Construa, compare e evolua sua estratégia com precisão</h1>
+            <p className="hero-lead">
+              Uma plataforma única para simular cenários certificados, antecipar riscos, receber recomendações
+              de alto impacto e exportar relatórios profissionais em segundos.
+            </p>
+            <ul className="feature-grid" aria-label="Principais benefícios">
+              {HERO_FEATURES.map(f => (
+                <li key={f.title} className="feature-item">
+                  <div className="feature-icon" aria-hidden="true">{f.icon}</div>
+                  <div>
+                    <h3>{f.title}</h3>
+                    <p>{f.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="metrics-bar" aria-label="Indicadores de confiança">
+              {HERO_METRICS.map(m => (
+                <div key={m.label} className="metric-box--hero">
+                  <strong>{m.value}</strong>
+                  <span>{m.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <aside className="auth-signup panel">
-          <div className="auth-signup__header">
-            <span className="auth-signup__eyebrow">Acesso exclusivo</span>
-            <h2>{mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta gratuita'}</h2>
-            <p>
-              {mode === 'login'
-                ? 'Entre para continuar monitorando suas metas e explorar novos cenários.'
-                : 'Cadastre-se em menos de 2 minutos e libere projeções avançadas, recomendações de especialistas e ferramentas colaborativas.'}
-            </p>
-          </div>
+        <aside className="auth-pane" aria-label={mode === 'login' ? 'Formulário de acesso' : 'Formulário de criação de conta'}>
+          <div className="auth-pane__inner">
+            <header className="auth-pane__header">
+              <span className="auth-eyebrow">{mode === 'login' ? 'Acesso' : 'Comece agora'}</span>
+              <h2>{mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta gratuita'}</h2>
+              <p className="auth-subtext">
+                {mode === 'login'
+                  ? 'Entre e continue suas simulações, comparativos e exportações.'
+                  : 'Menos de 2 minutos para liberar simulações avançadas, relatórios e recomendações de IA.'}
+              </p>
+            </header>
 
-          <form className="auth-form stack-space" onSubmit={handleSubmit}>
-            {mode === 'register' && (
-              <>
-                <label className="input-field">
-                  <span className="input-label">Nome completo</span>
-                  <input
-                    type="text"
-                    className="input-control"
-                    value={formState.name}
-                    onChange={(event) => handleChange('name', event.target.value)}
-                    placeholder="Ana Marques"
-                    required
-                  />
-                </label>
-                <div className="form-grid">
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              <div className="social-login" aria-hidden="false">
+                <button type="button" className="social-btn social-btn--google" onClick={() => alert('Integração Google em desenvolvimento')}>
+                  <span className="social-icon">G</span>
+                  <span>Google</span>
+                </button>
+                <button type="button" className="social-btn social-btn--microsoft" onClick={() => alert('Integração Microsoft em desenvolvimento')}>
+                  <span className="social-icon">MS</span>
+                  <span>Microsoft</span>
+                </button>
+              </div>
+              <div className="divider"><span>Ou continue com email</span></div>
+              {mode === 'register' && (
+                <>
                   <label className="input-field">
-                    <span className="input-label">Data de nascimento</span>
+                    <span className="input-label">Nome completo</span>
                     <input
-                      type="date"
+                      type="text"
                       className="input-control"
-                      value={formState.birthDate}
-                      max={format(new Date(), 'yyyy-MM-dd')}
-                      onChange={(event) => handleChange('birthDate', event.target.value)}
+                      value={formState.name}
+                      onChange={(e) => handleChange('name', e.target.value)}
+                      placeholder="Ana Marques"
                       required
                     />
                   </label>
-                  <label className="input-field">
-                    <span className="input-label">Pessoas na casa</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      className="input-control"
-                      value={formState.householdMembers}
-                      onChange={(event) => handleChange('householdMembers', event.target.value)}
-                    />
-                  </label>
-                </div>
-                <div className="plan-selector">
+                  <div className="form-grid">
+                    <label className="input-field">
+                      <span className="input-label">Data de nascimento</span>
+                      <input
+                        type="date"
+                        className="input-control"
+                        value={formState.birthDate}
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        onChange={(e) => handleChange('birthDate', e.target.value)}
+                        required
+                      />
+                    </label>
+                    <label className="input-field">
+                      <span className="input-label">Pessoas na casa</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        className="input-control"
+                        value={formState.householdMembers}
+                        onChange={(e) => handleChange('householdMembers', e.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <div className="plan-toggle" role="radiogroup" aria-label="Seleção de plano">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={formState.role === 'basic'}
+                      className={`plan-chip ${formState.role === 'basic' ? 'is-active' : ''}`}
+                      onClick={() => handleChange('role', 'basic')}
+                    >
+                      Essencial
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={formState.role === 'pro'}
+                      className={`plan-chip ${formState.role === 'pro' ? 'is-active' : ''}`}
+                      onClick={() => handleChange('role', 'pro')}
+                    >
+                      Pro
+                    </button>
+                  </div>
+                </>
+              )}
+              <div className="email-field-wrapper">
+              <label className="input-field">
+                <span className="input-label">Email</span>
+                <input
+                  type="email"
+                  className="input-control"
+                  value={formState.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="voce@empresa.com"
+                  required
+                />
+              </label>
+              {mode === 'register' && (
+                <EmailStatus status={emailStatus} />
+              )}
+              </div>
+              <label className="input-field">
+                <span className="input-label">Senha</span>
+                <div className="password-wrapper">
+                  <input
+                    type={passwordVisible ? 'text' : 'password'}
+                    className="input-control password-input"
+                    value={formState.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    minLength={8}
+                    placeholder="Mínimo de 8 caracteres"
+                    aria-describedby={`${formId}-pwd-strength`}
+                    required
+                  />
                   <button
                     type="button"
-                    className={`plan-option ${formState.role === 'basic' ? 'plan-option--active' : ''}`}
-                    onClick={() => handleChange('role', 'basic')}
+                    className="toggle-password"
+                    aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                    onClick={() => setPasswordVisible(v => !v)}
                   >
-                    <span>Plano Essencial</span>
-                    <small>Acesso ao simulador, relatórios padrão e presets certificados.</small>
-                  </button>
-                  <button
-                    type="button"
-                    className={`plan-option ${formState.role === 'pro' ? 'plan-option--active' : ''}`}
-                    onClick={() => handleChange('role', 'pro')}
-                  >
-                    <span>Plano Pro</span>
-                    <small>Comparativos avançados, metas colaborativas e integração Open Finance.</small>
+                    {passwordVisible ? '🙈' : '👁️'}
                   </button>
                 </div>
-              </>
-            )}
+                {mode === 'register' && (
+                  <div
+                    id={`${formId}-pwd-strength`}
+                    className={`pwd-strength pwd-strength--${passwordStrength.score}`}
+                    aria-live="polite"
+                  >
+                    Força: {passwordStrength.label}
+                    <span className="pwd-bar" aria-hidden="true">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <i key={i} className={i < passwordStrength.score ? 'on' : ''} />
+                      ))}
+                    </span>
+                  </div>
+                )}
+              </label>
 
-            <label className="input-field">
-              <span className="input-label">Email</span>
-              <input
-                type="email"
-                className="input-control"
-                value={formState.email}
-                onChange={(event) => handleChange('email', event.target.value)}
-                placeholder="voce@empresa.com"
-                required
-              />
-            </label>
-            <label className="input-field">
-              <span className="input-label">Senha</span>
-              <input
-                type="password"
-                className="input-control"
-                value={formState.password}
-                onChange={(event) => handleChange('password', event.target.value)}
-                minLength={8}
-                placeholder="Mínimo de 8 caracteres"
-                required
-              />
-            </label>
+              {(submitError || error) && (
+                <div className="form-error" role="alert">{submitError || error}</div>
+              )}
 
-            {(submitError || error) && (
-              <span className="text-danger">{submitError || error}</span>
-            )}
+              <button type="submit" className="button-primary" disabled={isLoading}>
+                {isLoading ? 'Processando...' : mode === 'login' ? 'Entrar agora' : 'Criar minha conta'}
+              </button>
+            </form>
 
-            <button type="submit" className="button-primary" disabled={isLoading}>
-              {mode === 'login' ? 'Entrar agora' : 'Criar minha conta'}
-            </button>
-          </form>
-
-          <div className="auth-switch-mode">
-            <span>{mode === 'login' ? 'Ainda não tem acesso?' : 'Já possui uma conta?'}</span>
-            <button type="button" onClick={switchMode}>
-              {mode === 'login' ? 'Comece gratuitamente' : 'Entrar com email e senha'}
-            </button>
-          </div>
-
-          <div className="auth-signup__footnote">
-            <span>Proteção de dados com criptografia AES-256 e autenticação em dois fatores opcional.</span>
+            <div className="auth-switch">
+              <span>{mode === 'login' ? 'Ainda não tem conta?' : 'Já possui acesso?'}</span>
+              <button type="button" onClick={switchMode} className="switch-action">
+                {mode === 'login' ? 'Criar conta gratuita' : 'Entrar com email e senha'}
+              </button>
+            </div>
+            <div className="auth-footnote">Criptografia AES-256, tokens rotativos e expansão futura para MFA.</div>
+            <div className="divider"><span>Ou</span></div>
+            <button type="button" className="button-ghost alt-demo" onClick={handleDemoLogin}>Explorar versão Pro em modo demo</button>
           </div>
         </aside>
       </main>
@@ -336,33 +429,22 @@ export function AuthScreen () {
               </article>
             </div>
 
-            <footer className="pro-modal__footer">
-              <button
-                type="button"
-                className="button-primary pro-modal__cta"
-                onClick={() => {
-                  setShowProModal(false)
-                  handleDemoLogin()
-                }}
-              >
-                Vivenciar versão Pro agora
-              </button>
-              <button
-                type="button"
-                className="button-ghost"
-                onClick={() => {
-                  setShowProModal(false)
-                  if (mode === 'login') {
-                    switchMode()
-                  }
-                }}
-              >
-                Criar conta básica gratuita
-              </button>
-            </footer>
+            {/* CTAs removidos do comparativo de planos por solicitação */}
           </div>
         </div>
       )}
     </div>
   )
+}
+
+function EmailStatus ({ status }) {
+  if (status === 'idle') return null
+  const map = {
+    checking: { text: 'Verificando email...', className: 'status status--checking' },
+    exists: { text: 'Email já cadastrado', className: 'status status--error' },
+    available: { text: 'Email disponível', className: 'status status--ok' },
+    invalid: { text: 'Formato de email inválido', className: 'status status--error' }
+  }
+  const cfg = map[status]
+  return <div className={cfg.className} role={status === 'exists' ? 'alert' : undefined}>{cfg.text}</div>
 }

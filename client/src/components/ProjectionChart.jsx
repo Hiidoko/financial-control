@@ -1,19 +1,9 @@
 import PropTypes from 'prop-types'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { ensureChartRegistration } from '@/utils/chartSetup.js'
 import { formatCurrency } from '../utils/formatters.js'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
+ensureChartRegistration()
 
 function buildDataset (scenarios) {
   const labels = scenarios[0]?.timeline.map((point) => `M${point.month}`) ?? []

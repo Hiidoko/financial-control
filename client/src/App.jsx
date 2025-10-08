@@ -10,7 +10,8 @@ import { RecommendationPanel } from './components/RecommendationPanel.jsx'
 import { StressTestList } from './components/StressTestList.jsx'
 import { WidgetBoard } from './components/WidgetBoard.jsx'
 import { FinancialTimeline } from './components/FinancialTimeline.jsx'
-import { ExportMenu } from './components/ExportMenu.jsx'
+import { ExportMenu } from './components/ExportMenu.jsx' // ainda usado dentro de menu legacy se necessário
+import { DashboardMenu } from './components/DashboardMenu.jsx'
 import { SimulationHistory } from './components/SimulationHistory.jsx'
 import { CalendarPlanner } from './components/CalendarPlanner.jsx'
 import { CertifiedPresetsPanel } from './components/CertifiedPresetsPanel.jsx'
@@ -438,56 +439,29 @@ export default function App () {
         locale={{ back: 'Voltar', close: 'Fechar', last: 'Finalizar', next: 'Próximo', skip: 'Pular' }}
       />
 
-      <header className="dashboard-header">
-        <div className="dashboard-header__top">
-          <div className="dashboard-header__identity">
-            <span className="dashboard-header__greeting">Bem-vindo, {displayName}.</span>
-            {authIsPro && (
-              <span className="dashboard-header__experience">Experiência Pro 2025</span>
-            )}
-            <span className={`plan-chip ${authIsPro ? 'plan-chip--pro' : 'plan-chip--basic'}`}>
-              {authIsPro ? 'Plano Pro ativo' : 'Plano Basic'}
-            </span>
+      <header className="dash-hero dash-hero--compact" data-tour="dashboard-hero">
+        <div className="dash-hero__bg" aria-hidden="true" />
+        <div className="dash-hero__bar">
+          <div className="dash-hero__user">
+            <span className="dash-hero__greeting">{displayName}</span>
+            {authIsPro && <span className="badge badge--pro" title="Plano Pro ativo">Pro</span>}
           </div>
-          <button type="button" className="toggle-button dashboard-header__logout" onClick={logout}>
-            Sair
-          </button>
+          <div className="dash-hero__actions-minimal" aria-label="Ações do dashboard">
+            <DashboardMenu
+              theme={theme}
+              toggleTheme={toggleTheme}
+              focusMode={focusMode}
+              toggleFocusMode={toggleFocusMode}
+              onStartTour={() => setIsTourRunning(true)}
+              tourDisabled={!dashboardReady}
+              results={results}
+              payload={payload}
+              logout={logout}
+            />
+          </div>
         </div>
-
-        <div className="dashboard-header__title">
-          <h1>Simulador de Futuro Financeiro</h1>
-          <p>{headerSubtitle}</p>
-        </div>
-
-        <div className={`plan-highlight ${authIsPro ? 'plan-highlight--pro' : 'plan-highlight--basic'}`}>
-          {authIsPro ? (
-            <p>
-              Você está no plano Pro com acesso aos relatórios comparativos certificados ANBIMA, metas colaborativas em tempo real e snapshots Open Finance para tomar decisões rápidas.
-            </p>
-          ) : (
-            <p>
-              Assine o plano Pro para desbloquear relatórios comparativos certificados ANBIMA, metas colaborativas compartilhadas e snapshots Open Finance com alertas inteligentes.
-            </p>
-          )}
-        </div>
-
-  <div className="header-controls dashboard-header__controls" data-tour="dashboard-controls">
-          <button type="button" className="toggle-button" data-tour="theme-toggle" onClick={toggleTheme}>
-            {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
-          </button>
-          <button type="button" className="toggle-button" data-tour="focus-toggle" onClick={toggleFocusMode}>
-            {focusMode ? 'Sair do modo foco' : 'Ativar modo foco'}
-          </button>
-          <button
-            type="button"
-            className="toggle-button"
-            data-tour="tour-button"
-            onClick={() => setIsTourRunning(true)}
-            disabled={!dashboardReady}
-          >
-            Assistente guiado
-          </button>
-          <ExportMenu targetId="dashboard-content" results={results} payload={payload} />
+        <div className="dash-hero__subinfo">
+          <p className="dash-hero__context-line">{headerSubtitle}</p>
         </div>
       </header>
 

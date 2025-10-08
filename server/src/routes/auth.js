@@ -85,6 +85,23 @@ router.post('/register', async (req, res) => {
   }
 })
 
+// Validação inline de email já utilizado (sem expor se banco não está pronto)
+router.get('/check-email', async (req, res) => {
+  try {
+    const email = String(req.query.email || '').trim().toLowerCase()
+    if (!email) return res.status(400).json({ error: 'Parâmetro email é obrigatório' })
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'Email inválido' })
+    if (!isDatabaseReady()) {
+      return res.json({ exists: false, demo: true })
+    }
+    const exists = await User.exists({ email })
+    return res.json({ exists: Boolean(exists) })
+  } catch (error) {
+    console.error('Erro ao checar email', error)
+    return res.status(500).json({ error: 'Falha ao verificar email' })
+  }
+})
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8)

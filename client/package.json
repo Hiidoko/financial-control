@@ -29,6 +29,8 @@
   },
   "devDependencies": {
     "@testing-library/react": "^14.2.1",
+    "@testing-library/jest-dom": "^6.4.3",
+    "axe-core": "^4.9.0",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.35.0",

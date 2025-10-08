@@ -1,15 +1,8 @@
 import PropTypes from 'prop-types'
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-} from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { ensureChartRegistration } from '@/utils/chartSetup.js'
 
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
+ensureChartRegistration()
 
 const DEFAULT_JOB_LOSS_MONTH = 6
 const UNEXPECTED_EXPENSE_MONTH = 6

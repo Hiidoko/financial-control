@@ -112,7 +112,11 @@ function startServer (port = DEFAULT_PORT, attempt = 0) {
     if (port !== DEFAULT_PORT && process.env.PORT == null) {
       process.env.PORT = String(port)
     }
+    const host = process.env.HOST || 'localhost'
+    const baseUrl = `http://${host}:${port}/`
     console.log(`Servidor de simulações financeiras rodando na porta ${port}`)
+    console.log(`\n━━━━ Link de acesso ━━━━\n${baseUrl}\n━━━━━━━━━━━━━━━━━━━━━━━━`) // bloco visual simples
+    console.log(`Health: ${baseUrl}api/health`)
   })
 
   server.once('error', (error) => {
